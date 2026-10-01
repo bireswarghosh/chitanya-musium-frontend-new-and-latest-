@@ -1,0 +1,134 @@
+/* ============================================================
+   Chaitanya Museum — Premium List/Table Pages polish
+   Applies to museum-entries, booking-list, camping, admins…
+   Logic untouched — pure visual upgrade, light + dark.
+   ============================================================ */
+
+.content-body .card {
+  border-radius: 18px !important;
+  border: 1px solid #e6ebf2 !important;
+  box-shadow: 0 14px 34px -20px rgba(2, 32, 71, 0.25) !important;
+  overflow: hidden;
+}
+
+.content-body .card-header {
+  background: linear-gradient(180deg, #f8fafc, #ffffff) !important;
+  border-bottom: 1px solid #e6ebf2 !important;
+  padding: 0.9rem 1.2rem !important;
+}
+
+.content-body .card-title {
+  font-weight: 800 !important;
+  letter-spacing: -0.2px;
+  font-size: 1.02rem !important;
+}
+
+.content-body .table {
+  margin-bottom: 0;
+  font-size: 0.86rem;
+}
+
+.content-body .table thead th {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-size: 0.7rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 800 !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  padding: 0.65rem 0.75rem !important;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.content-body .table tbody td {
+  padding: 0.65rem 0.75rem !important;
+  vertical-align: middle !important;
+}
+
+.content-body .table-hover tbody tr {
+  transition: background 0.14s ease, transform 0.14s ease;
+}
+
+.content-body .table-hover tbody tr:hover {
+  background: rgba(2, 132, 199, 0.06) !important;
+}
+
+.content-body .btn-primary {
+  background: linear-gradient(135deg, #0284c7, #00c2fe) !important;
+  border: none !important;
+  border-radius: 11px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 8px 18px -8px rgba(2, 132, 199, 0.6) !important;
+  transition: transform 0.16s ease !important;
+}
+
+.content-body .btn-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.content-body .btn-outline-primary {
+  border-radius: 11px !important;
+  font-weight: 700 !important;
+}
+
+.content-body .form-control,
+.content-body .form-select {
+  border-radius: 11px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  font-size: 0.86rem !important;
+}
+
+.content-body .form-control:focus,
+.content-body .form-select:focus {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.13) !important;
+}
+
+.content-body .badge {
+  border-radius: 999px !important;
+  padding: 0.3rem 0.7rem !important;
+  font-weight: 700 !important;
+}
+
+.content-body .modal-content {
+  border-radius: 20px !important;
+  border: none !important;
+  box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* ---------- dark ---------- */
+body[data-theme-version="dark"] .content-body .card {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+}
+
+body[data-theme-version="dark"] .content-body .card-header {
+  background: linear-gradient(180deg, #16213a, #0f172a) !important;
+  border-color: #1e293b !important;
+}
+
+body[data-theme-version="dark"] .content-body .table thead th {
+  background: #16213a !important;
+  color: #94a3b8 !important;
+  border-color: #1e293b !important;
+}
+
+body[data-theme-version="dark"] .content-body .table tbody td {
+  color: #e2e8f0 !important;
+  border-color: #1e293b !important;
+}
+
+body[data-theme-version="dark"] .content-body .table-hover tbody tr:hover {
+  background: rgba(56, 189, 248, 0.08) !important;
+}
+
+body[data-theme-version="dark"] .content-body .form-control,
+body[data-theme-version="dark"] .content-body .form-select {
+  background: #0b1226 !important;
+  border-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}

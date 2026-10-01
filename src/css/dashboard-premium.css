@@ -1,0 +1,233 @@
+/* ============================================================
+   Chaitanya Museum — Premium Operations Dashboard
+   Light / dark (body[data-theme-version]) + responsive
+   ============================================================ */
+
+.db-wrap {
+  --db-bg: transparent;
+  --db-card: #ffffff;
+  --db-soft: #f8fafc;
+  --db-text: #0f172a;
+  --db-muted: #64748b;
+  --db-border: #e2e8f0;
+  --db-shadow: 0 12px 30px -14px rgba(2, 32, 71, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: db-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes db-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+body[data-theme-version="dark"] .db-wrap {
+  --db-card: #0f172a;
+  --db-soft: #16213a;
+  --db-text: #f1f5f9;
+  --db-muted: #94a3b8;
+  --db-border: #1e293b;
+  --db-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.6);
+}
+
+/* header */
+.db-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.db-head h1 {
+  font-size: clamp(1.25rem, 2.6vw, 1.7rem);
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  margin: 0;
+  color: var(--db-text);
+}
+.db-head h1 .wave { display: inline-block; animation: db-wave 2.4s ease-in-out infinite; transform-origin: 70% 70%; }
+@keyframes db-wave {
+  0%, 60%, 100% { transform: rotate(0); }
+  10%, 30% { transform: rotate(16deg); }
+  20%, 40% { transform: rotate(-8deg); }
+}
+.db-head p { margin: 0.15rem 0 0; color: var(--db-muted); font-size: 0.84rem; }
+.db-head-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.db-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.55rem 1rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--db-border);
+  background: var(--db-card);
+  color: var(--db-text);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+.db-btn:hover { transform: translateY(-2px); box-shadow: var(--db-shadow); color: var(--db-text); }
+.db-btn.primary {
+  background: linear-gradient(135deg, #0284c7, #00c2fe);
+  border: none;
+  color: #fff;
+  box-shadow: 0 10px 22px -8px rgba(2, 132, 199, 0.55);
+}
+.db-btn.primary:hover { color: #fff; }
+
+/* stat cards */
+.db-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
+.db-stat {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 1rem 1.1rem;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: var(--db-shadow);
+  transition: transform 0.18s ease;
+  min-height: 118px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.db-stat:hover { transform: translateY(-3px); color: #fff; }
+.db-stat::after {
+  content: "";
+  position: absolute;
+  right: -40px; top: -40px;
+  width: 150px; height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+.db-stat .db-emoji { font-size: 1.6rem; position: relative; z-index: 1; }
+.db-stat .db-num { font-size: 1.65rem; font-weight: 800; letter-spacing: -0.5px; position: relative; z-index: 1; line-height: 1.25; }
+.db-stat .db-lbl { font-size: 0.76rem; opacity: 0.92; position: relative; z-index: 1; }
+.db-stat .db-sub { font-size: 0.68rem; opacity: 0.75; position: relative; z-index: 1; }
+.db-s1 { background: linear-gradient(135deg, #0284c7, #00c2fe); }
+.db-s2 { background: linear-gradient(135deg, #059669, #34d399); }
+.db-s3 { background: linear-gradient(135deg, #7c3aed, #c084fc); }
+.db-s4 { background: linear-gradient(135deg, #ea580c, #fbbf24); }
+.db-stat.loading .db-num { opacity: 0.6; }
+
+/* main grid */
+.db-grid { display: grid; grid-template-columns: 7fr 5fr; gap: 0.8rem; align-items: start; }
+.db-card {
+  background: var(--db-card);
+  border: 1px solid var(--db-border);
+  border-radius: 18px;
+  box-shadow: var(--db-shadow);
+  overflow: hidden;
+}
+.db-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.9rem 1.1rem 0.7rem;
+}
+.db-card-head h3 { margin: 0; font-size: 0.95rem; font-weight: 800; color: var(--db-text); }
+.db-card-head small { display: block; color: var(--db-muted); font-weight: 500; font-size: 0.72rem; }
+.db-link { font-size: 0.76rem; font-weight: 700; color: #0284c7; text-decoration: none; white-space: nowrap; }
+.db-link:hover { text-decoration: underline; }
+
+/* chart */
+.db-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.55rem;
+  padding: 0.4rem 1.1rem 0.2rem;
+  height: 168px;
+}
+.db-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; height: 100%; justify-content: flex-end; }
+.db-bar-val { font-size: 0.66rem; font-weight: 800; color: var(--db-muted); }
+.db-bar {
+  width: 100%;
+  max-width: 44px;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, #00c2fe, #0284c7);
+  min-height: 6px;
+  transition: height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+.db-bar-col.today .db-bar { background: linear-gradient(180deg, #fbbf24, #ea580c); box-shadow: 0 6px 16px -6px rgba(234, 88, 12, 0.6); }
+.db-bar-day { font-size: 0.66rem; font-weight: 700; color: var(--db-muted); }
+.db-bar-col.today .db-bar-day { color: #ea580c; }
+.db-legend {
+  display: flex; gap: 1rem; padding: 0.55rem 1.1rem 0.9rem;
+  font-size: 0.72rem; color: var(--db-muted);
+}
+.db-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 0.3rem; }
+
+/* lists */
+.db-list { padding: 0 0.6rem 0.8rem; display: flex; flex-direction: column; }
+.db-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.5rem;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.db-row:hover { background: var(--db-soft); }
+.db-row + .db-row { border-top: 1px solid var(--db-border); }
+.db-avatar {
+  width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, #0284c7, #00c2fe);
+}
+.db-avatar.violet { background: linear-gradient(135deg, #7c3aed, #c084fc); }
+.db-avatar.green { background: linear-gradient(135deg, #059669, #34d399); }
+.db-avatar.orange { background: linear-gradient(135deg, #ea580c, #fbbf24); }
+.db-row-main { flex: 1; min-width: 0; }
+.db-row-main b { display: block; font-size: 0.84rem; color: var(--db-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.db-row-main small { color: var(--db-muted); font-size: 0.72rem; }
+.db-row-right { text-align: right; flex-shrink: 0; }
+.db-row-right b { display: block; font-size: 0.88rem; color: var(--db-text); }
+.db-pill { font-size: 0.64rem; font-weight: 800; padding: 0.18rem 0.6rem; border-radius: 999px; }
+.db-pill.cash { background: rgba(5, 150, 105, 0.14); color: #059669; }
+.db-pill.online { background: rgba(2, 132, 199, 0.14); color: #0284c7; }
+body[data-theme-version="dark"] .db-pill.cash { color: #34d399; }
+body[data-theme-version="dark"] .db-pill.online { color: #7dd3fc; }
+
+.db-empty { padding: 1.6rem 1rem; text-align: center; color: var(--db-muted); font-size: 0.84rem; }
+.db-empty .big { font-size: 2rem; display: block; margin-bottom: 0.4rem; }
+
+/* quick actions */
+.db-quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
+.db-grid .db-quick { grid-template-columns: repeat(2, 1fr); }
+.db-action {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: var(--db-card);
+  border: 1px solid var(--db-border);
+  border-radius: 16px;
+  padding: 0.8rem 0.95rem;
+  text-decoration: none;
+  box-shadow: var(--db-shadow);
+  transition: transform 0.16s ease, border-color 0.16s ease;
+}
+.db-action:hover { transform: translateY(-2px); border-color: #0284c7; }
+.db-action .db-emoji { font-size: 1.5rem; }
+.db-action b { display: block; font-size: 0.84rem; color: var(--db-text); }
+.db-action small { color: var(--db-muted); font-size: 0.7rem; }
+
+/* responsive */
+@media (max-width: 992px) {
+  .db-stats { grid-template-columns: repeat(2, 1fr); }
+  .db-grid { grid-template-columns: 1fr; }
+  .db-quick { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .db-stats { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .db-stat { min-height: 104px; padding: 0.8rem; }
+  .db-stat .db-num { font-size: 1.35rem; }
+  .db-quick { grid-template-columns: 1fr; }
+}
