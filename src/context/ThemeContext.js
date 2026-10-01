@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
 
 export const ThemeContext = createContext();
 
