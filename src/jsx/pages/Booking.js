@@ -1,30 +1,35 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import axios from 'axios';
 import swal from 'sweetalert';
-import '../../css/forms-premium.css';
+import { ThemeContext } from '../../context/ThemeContext';
 
 const API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/booking';
-
-// Default hall rates — editable in the form (visit-entry style)
 const DEFAULT_SERVICE_CHARGE = 1000;
-const DEFAULT_BOOKING_CHARGE = 3000; // base hours included
+const DEFAULT_BOOKING_CHARGE = 3000;
 const DEFAULT_EXTRA_HOUR_CHARGE = 1000;
 const DEFAULT_BASE_HOURS = 3;
 
-const num = (v, fb = 0) => {
-  const n = Number(v);
-  return Number.isFinite(n) && n >= 0 ? n : fb;
-};
+const num = (v, fb = 0) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : fb; };
 
 const Booking = () => {
-  const [formData, setFormData] = useState({
-    fullname: '', phone: '', email: '', address: '',
-    booking_date: '', booking_time: '',
-    extra_hours: '0', payment: '0', txn_id: ''
-  });
-  const [loading, setLoading] = useState(false);
+  const { background } = useContext(ThemeContext);
+  const dk = background.value === 'dark';
 
-  // Editable rates (same calculation logic, defaults preserved)
+  const pageBg   = dk ? 'linear-gradient(180deg,#0f172a 0%,#1e293b 100%)' : 'linear-gradient(180deg,#F8FAFC 0%,#EFF6FF 100%)';
+  const cardBg   = dk ? '#1e293b' : '#ffffff';
+  const panelBg  = dk ? '#0f172a' : '#F8FAFC';
+  const border   = dk ? '#334155' : '#E2E8F0';
+  const text     = dk ? '#e2e8f0' : '#0F172A';
+  const muted    = dk ? '#94a3b8' : '#64748B';
+  const heading  = dk ? '#e2e8f0' : '#1E3A8A';
+  const chipBg   = dk ? '#1e3a5f' : '#EFF6FF';
+  const chipClr  = dk ? '#93c5fd' : '#1D4ED8';
+  const chipBdr  = dk ? '#1d4ed8' : '#BFDBFE';
+  const inputBg  = dk ? '#0f172a' : '#ffffff';
+  const inputBdr = dk ? '#475569' : '#CBD5E1';
+
+  const [formData, setFormData] = useState({ fullname: '', phone: '', email: '', address: '', booking_date: '', booking_time: '', extra_hours: '0', payment: '0', txn_id: '' });
+  const [loading, setLoading] = useState(false);
   const [serviceCharge, setServiceCharge] = useState(DEFAULT_SERVICE_CHARGE);
   const [bookingCharge, setBookingCharge] = useState(DEFAULT_BOOKING_CHARGE);
   const [extraHourCharge, setExtraHourCharge] = useState(DEFAULT_EXTRA_HOUR_CHARGE);
@@ -39,233 +44,212 @@ const Booking = () => {
   const totalAmt = svc + book + extraCharge;
   const totalHours = bh + extraHours;
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); };
+  const resetForm = () => setFormData({ fullname: '', phone: '', email: '', address: '', booking_date: '', booking_time: '', extra_hours: '0', payment: '0', txn_id: '' });
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const payload = {
-      ...formData,
-      hours: totalHours,
-      service_charge: svc,
-      booking_charge: book,
-      extra_charge: extraCharge,
-      total_amt: totalAmt
-    };
-
-    // Online payment → Razorpay
+    e.preventDefault(); setLoading(true);
+    const payload = { ...formData, hours: totalHours, service_charge: svc, booking_charge: book, extra_charge: extraCharge, total_amt: totalAmt };
     if (formData.payment === '1') {
       try {
-        const { data: order } = await axios.post(
-          'https://chitanya-musium-backend-new-and-latest.onrender.com/api/razorpay/create-order',
-          { amount: totalAmt }
-        );
-
+        const { data: order } = await axios.post('https://chitanya-musium-backend-new-and-latest.onrender.com/api/razorpay/create-order', { amount: totalAmt });
         const options = {
-          key: 'rzp_live_RkF1Uzk5QpuC1K',
-          amount: order.amount,
-          currency: order.currency || 'INR',
-          name: 'Booking Payment',
-          description: `${totalHours} Hours Booking`,
-          order_id: order.id,
-          prefill: {
-            name: formData.firstname || '',
-            contact: formData.phone || ''
-          },
+          key: 'rzp_live_RkF1Uzk5QpuC1K', amount: order.amount, currency: order.currency || 'INR',
+          name: 'Booking Payment', description: `${totalHours} Hours Booking`, order_id: order.id,
+          prefill: { name: formData.fullname || '', contact: formData.phone || '' },
           handler: async function (response) {
-            const finalPayload = { ...payload, payment: '1', txn_id: response.razorpay_payment_id };
-            await axios.post(API, finalPayload);
-            swal("Success!", "Payment Done & Booking Confirmed!", "success");
-            resetForm();
+            await axios.post(API, { ...payload, payment: '1', txn_id: response.razorpay_payment_id });
+            swal("Success!", "Payment Done & Booking Confirmed!", "success"); resetForm();
           },
           theme: { color: '#3399cc' }
         };
-
         const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', function (response) {
-          swal("Payment Failed", response.error?.description || "Payment was not completed", "error");
-        });
+        rzp.on('payment.failed', function (r) { swal("Payment Failed", r.error?.description || "Payment was not completed", "error"); });
         rzp.open();
-      } catch (err) {
-        swal("Error!", err.response?.data?.error || "Payment order creation failed", "error");
-      } finally { setLoading(false); }
+      } catch (err) { swal("Error!", err.response?.data?.error || "Payment order creation failed", "error"); }
+      finally { setLoading(false); }
       return;
     }
-
-    // Cash payment
-    try {
-      await axios.post(API, payload);
-      swal("Success!", "Booking Created!", "success");
-      resetForm();
-    } catch {
-      swal("Error!", "Failed to create booking", "error");
-    } finally { setLoading(false); }
+    try { await axios.post(API, payload); swal("Success!", "Booking Created!", "success"); resetForm(); }
+    catch { swal("Error!", "Failed to create booking", "error"); }
+    finally { setLoading(false); }
   };
 
-  const rateField = (val, setVal, title) => (
-    <input
-      type="number"
-      value={val}
-      min="0"
-      title={title}
-      onChange={(e) => {
-        const v = e.target.value;
-        setVal(v === '' ? '' : Math.max(0, Number(v)));
-      }}
-    />
+  const inp = { border: `1px solid ${inputBdr}`, borderRadius: '8px', padding: '6px 10px', fontSize: '12.5px', background: inputBg, color: text };
+
+  const rateInput = (val, setVal) => (
+    <input type="number" value={val} min="0" className="form-control form-control-sm text-center fw-bold"
+      style={{ borderRadius: '8px', fontSize: '13px', background: inputBg, color: text, border: `1px solid ${inputBdr}` }}
+      onChange={(e) => { const v = e.target.value; setVal(v === '' ? '' : Math.max(0, Number(v))); }} />
   );
 
-  const resetForm = () => {
-    setFormData({ fullname: '', phone: '', email: '', address: '', booking_date: '', booking_time: '', extra_hours: '0', payment: '0', txn_id: '' });
-  };
-
   return (
-    <div className="pf-page">
-      <div className="pf-shell">
-        <div className="pf-topbar">
-          <span className="pf-brandchip"><span className="pf-mark">🏛️</span> Sri Chaitanya Museum · Hall Booking</span>
-          <span className="pf-live"><span className="dot" /> Live counter · auto total</span>
+    <div style={{ minHeight: '100vh', background: pageBg, color: text, padding: '10px 12px', display: 'flex', flexDirection: 'column', fontFamily: "'Outfit','Inter',system-ui,sans-serif" }}>
+      <div className="container" style={{ maxWidth: '1100px', margin: '0 auto' }}>
+
+        {/* HEADER */}
+        <div className="text-center mb-2">
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px', background: chipBg, border: `1px solid ${chipBdr}`, borderRadius: '50px', color: chipClr, fontSize: '11px', fontWeight: '700', letterSpacing: '0.5px', padding: '4px 14px' }}>
+            🏛️ SRI CHAITANYA MAHAPRABHU MUSEUM · HALL BOOKING
+          </div>
+          <h2 style={{ fontWeight: '900', fontSize: '20px', color: heading, margin: '2px 0 1px 0' }}>🏟️ Hall Booking Form</h2>
+          <p style={{ color: muted, fontSize: '12px', margin: 0 }}>Adjust rates if needed — default tariff applies automatically</p>
         </div>
 
-        <div className="pf-title">
-          <h1>🏟️ Hall Booking Form</h1>
-          <p>Adjust rates if needed — default tariff applies automatically</p>
-        </div>
+        {/* MAIN 2-COLUMN CARD */}
+        <div className="row g-2 align-items-stretch" style={{ background: cardBg, borderRadius: '16px', padding: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', border: `1px solid ${border}` }}>
 
-        <div className="pf-card">
-          <div className="pf-card-accent" />
-          <div className="pf-card-body">
-            <form onSubmit={handleSubmit}>
-              {/* EDITABLE TARIFF */}
-              <div className="pf-section-head">
-                <span className="pf-ico">💰</span>
-                <div><h3>Hall Tariff</h3><small>Tap any rate to edit — changes reflect instantly</small></div>
-                <span className="pf-tag">✏️ Editable</span>
+          {/* LEFT: TARIFF + TOTAL */}
+          <div className="col-md-5">
+            <div style={{ background: panelBg, border: `1px solid ${border}`, borderRadius: '14px', padding: '16px', height: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="d-flex align-items-center justify-content-between">
+                <h6 style={{ margin: 0, fontWeight: '800', color: text, fontSize: '14px' }}>💰 Hall Tariff</h6>
+                <span style={{ background: chipBg, color: chipClr, border: `1px solid ${chipBdr}`, borderRadius: '20px', fontSize: '10px', fontWeight: '700', padding: '2px 10px' }}>✏️ Editable</span>
               </div>
 
-              <div className="pf-rates">
-                <div className="pf-rate">
-                  <span className="pf-emoji">🧹</span>
-                  <small>Service</small>
-                  <div className="pf-rate-edit"><span className="cur">₹</span>{rateField(serviceCharge, setServiceCharge, 'Edit service charge')}</div>
-                  <span className="pf-rate-hint">flat</span>
-                </div>
-                <div className="pf-rate">
-                  <span className="pf-emoji">🏟️</span>
-                  <small>Hall ({bh}h)</small>
-                  <div className="pf-rate-edit"><span className="cur">₹</span>{rateField(bookingCharge, setBookingCharge, 'Edit hall booking charge')}</div>
-                  <span className="pf-rate-hint">base pack</span>
-                </div>
-                <div className="pf-rate">
-                  <span className="pf-emoji">⏱️</span>
-                  <small>Extra /hr</small>
-                  <div className="pf-rate-edit"><span className="cur">₹</span>{rateField(extraHourCharge, setExtraHourCharge, 'Edit extra hour charge')}</div>
-                  <span className="pf-rate-hint">per hour</span>
-                </div>
-                <div className="pf-rate">
-                  <span className="pf-emoji">🕙</span>
-                  <small>Base hrs</small>
-                  <div className="pf-rate-edit">{rateField(baseHours, setBaseHours, 'Edit base hours')}<span className="cur">h</span></div>
-                  <span className="pf-rate-hint">included</span>
-                </div>
+              {/* Rate Cards */}
+              <div className="row g-2">
+                {[
+                  { emoji: '🧹', label: 'Service', hint: 'flat', val: serviceCharge, set: setServiceCharge },
+                  { emoji: '🏟️', label: `Hall (${bh}h)`, hint: 'base pack', val: bookingCharge, set: setBookingCharge },
+                  { emoji: '⏱️', label: 'Extra /hr', hint: 'per hour', val: extraHourCharge, set: setExtraHourCharge },
+                  { emoji: '🕙', label: 'Base hrs', hint: 'included', val: baseHours, set: setBaseHours, suffix: 'h' },
+                ].map(({ emoji, label, hint, val, set, suffix }) => (
+                  <div className="col-6" key={label}>
+                    <div style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '1.2rem' }}>{emoji}</div>
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: muted, textTransform: 'uppercase', letterSpacing: '0.5px', margin: '2px 0 4px' }}>{label}</div>
+                      <div className="d-flex align-items-center justify-content-center gap-1">
+                        {!suffix && <span style={{ fontSize: '11px', color: muted, fontWeight: '700' }}>₹</span>}
+                        {rateInput(val, set)}
+                        {suffix && <span style={{ fontSize: '11px', color: muted, fontWeight: '700' }}>{suffix}</span>}
+                      </div>
+                      <div style={{ fontSize: '10px', color: muted, marginTop: '2px' }}>{hint}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              {/* PERSONAL */}
-              <div className="pf-section-head">
-                <span className="pf-ico">👤</span>
-                <div><h3>Personal Info</h3><small>Booker contact details</small></div>
-              </div>
-              <div className="pf-grid">
-                <div className="pf-field pf-c6">
-                  <label>Full Name <span className="req">*</span></label>
-                  <input placeholder="e.g. Rahul Sharma" name="fullname" value={formData.fullname} onChange={handleChange} required />
-                </div>
-                <div className="pf-field pf-c6">
-                  <label>Phone <span className="req">*</span></label>
-                  <input placeholder="10-digit mobile number" name="phone" value={formData.phone} onChange={handleChange} required />
-                </div>
-                <div className="pf-field pf-c6">
-                  <label>Email</label>
-                  <input placeholder="name@example.com" name="email" value={formData.email} onChange={handleChange} />
-                </div>
-                <div className="pf-field pf-c6">
-                  <label>Address</label>
-                  <input placeholder="City / address" name="address" value={formData.address} onChange={handleChange} />
+              {/* Breakdown */}
+              <div style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: '12px', padding: '12px', fontSize: '12px' }}>
+                {[
+                  { icon: '🧹', label: 'Service', val: svc },
+                  { icon: '🏟️', label: `Hall (${bh}h)`, val: book },
+                  { icon: '⏱️', label: `Extra (${extraHours}h)`, val: extraCharge },
+                ].map(({ icon, label, val }) => (
+                  <div className="d-flex justify-content-between mb-1" key={label}>
+                    <span style={{ color: muted }}>{icon} {label}</span>
+                    <span style={{ fontWeight: '700', color: text }}>₹{val}</span>
+                  </div>
+                ))}
+                <div style={{ borderTop: `1px dashed ${border}`, marginTop: '6px', paddingTop: '6px' }} className="d-flex justify-content-between">
+                  <span style={{ fontWeight: '700', color: text }}>Total · {totalHours}h</span>
+                  <span style={{ fontWeight: '900', color: '#0284c7', fontSize: '14px' }}>₹{totalAmt}</span>
                 </div>
               </div>
 
-              {/* BOOKING */}
-              <div className="pf-section-head pf-mt">
-                <span className="pf-ico">📅</span>
-                <div><h3>Booking Details</h3><small>Date, time & extra hours</small></div>
+              {/* TOTAL BAR */}
+              <div style={{ borderRadius: '14px', padding: '14px 16px', color: '#fff', background: 'linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '-40%', right: '-10%', width: '200px', height: '200px', background: 'radial-gradient(circle,rgba(79,172,254,0.2) 0%,transparent 70%)', pointerEvents: 'none' }} />
+                <div className="d-flex align-items-center justify-content-between" style={{ position: 'relative' }}>
+                  <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'rgba(255,255,255,0.5)' }}>Total · {totalHours} hours</span>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
+                    <span style={{ fontSize: '16px', fontWeight: '800', color: '#fbbf24' }}>₹</span>
+                    <span style={{ fontSize: '28px', fontWeight: '900', color: '#fff', letterSpacing: '-1px' }}>{totalAmt}</span>
+                  </div>
+                </div>
               </div>
-              <div className="pf-grid">
-                <div className="pf-field pf-c4">
-                  <label>Booking Date <span className="req">*</span></label>
-                  <input type="date" name="booking_date" value={formData.booking_date} onChange={handleChange} required />
-                </div>
-                <div className="pf-field pf-c4">
-                  <label>Booking Time</label>
-                  <input type="time" name="booking_time" value={formData.booking_time} onChange={handleChange} />
-                </div>
-                <div className="pf-field pf-c4">
-                  <label>Extra Hours (₹{ehr}/hr)</label>
-                  <input type="number" name="extra_hours" value={formData.extra_hours} onChange={handleChange} min="0" />
-                </div>
+            </div>
+          </div>
+
+          {/* RIGHT: BOOKING DETAILS + PAYMENT + SUBMIT */}
+          <div className="col-md-7">
+            <div style={{ padding: '8px 12px' }}>
+              <div className="d-flex align-items-center justify-content-between mb-2">
+                <h6 style={{ fontWeight: '800', color: text, margin: 0, fontSize: '15px' }}>📋 Booking Details</h6>
+                <small style={{ color: muted, fontSize: '11px' }}>Fill in to confirm booking</small>
               </div>
 
-              {/* TOTAL */}
-              <div className="pf-total">
-                <div className="pf-break">
-                  Service <b>₹{svc}</b> + Hall ({bh}h) <b>₹{book}</b> + Extra ({extraHours}h) <b>₹{extraCharge}</b>
-                </div>
-                <div className="pf-amt">
-                  <small>Total · {totalHours} hours</small>
-                  <strong><span className="cur">₹</span>{totalAmt}</strong>
-                </div>
-              </div>
+              <form onSubmit={handleSubmit}>
+                <div className="row g-2">
+                  <div className="col-md-6">
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Full Name <span style={{ color: '#dc2626' }}>*</span></label>
+                    <input className="form-control form-control-sm" style={{ ...inp }} placeholder="e.g. Rahul Sharma" name="fullname" value={formData.fullname} onChange={handleChange} required />
+                  </div>
+                  <div className="col-md-6">
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Phone <span style={{ color: '#dc2626' }}>*</span></label>
+                    <input className="form-control form-control-sm" style={{ ...inp }} placeholder="10-digit mobile" name="phone" value={formData.phone} onChange={handleChange} required />
+                  </div>
+                  <div className="col-md-6">
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Email</label>
+                    <input className="form-control form-control-sm" style={{ ...inp }} placeholder="name@example.com" name="email" value={formData.email} onChange={handleChange} />
+                  </div>
+                  <div className="col-md-6">
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Address</label>
+                    <input className="form-control form-control-sm" style={{ ...inp }} placeholder="City / address" name="address" value={formData.address} onChange={handleChange} />
+                  </div>
+                  <div className="col-md-4">
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Booking Date <span style={{ color: '#dc2626' }}>*</span></label>
+                    <input type="date" className="form-control form-control-sm" style={{ ...inp }} name="booking_date" value={formData.booking_date} onChange={handleChange} required />
+                  </div>
+                  <div className="col-md-4">
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Booking Time</label>
+                    <input type="time" className="form-control form-control-sm" style={{ ...inp }} name="booking_time" value={formData.booking_time} onChange={handleChange} />
+                  </div>
+                  <div className="col-md-4">
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Extra Hours (₹{ehr}/hr)</label>
+                    <input type="number" className="form-control form-control-sm" style={{ ...inp }} name="extra_hours" value={formData.extra_hours} onChange={handleChange} min="0" />
+                  </div>
 
-              {/* PAYMENT */}
-              <div className="pf-section-head pf-mt">
-                <span className="pf-ico">💳</span>
-                <div><h3>Payment</h3><small>Collection channel</small></div>
-              </div>
-              <div className="pf-pay">
-                <div className={`pf-pay-opt ${formData.payment === '0' ? 'active' : ''}`} onClick={() => setFormData(p => ({ ...p, payment: '0' }))}>
-                  <span className="pf-emoji">💵</span>
-                  <div><b>Cash</b><small>Instant confirmation</small></div>
-                </div>
-                <div className={`pf-pay-opt ${formData.payment === '1' ? 'active' : ''}`} onClick={() => setFormData(p => ({ ...p, payment: '1' }))}>
-                  <span className="pf-emoji">⚡</span>
-                  <div><b>Online</b><small>Razorpay / UPI</small></div>
-                </div>
-              </div>
-              <div className="pf-grid pf-mt">
-                <div className="pf-field pf-c6">
-                  <label>Mode</label>
-                  <select name="payment" value={formData.payment} onChange={handleChange}>
-                    <option value="0">Cash</option>
-                    <option value="1">Online</option>
-                  </select>
-                </div>
-                <div className="pf-field pf-c6">
-                  <label>Transaction ID</label>
-                  <input placeholder="UPI ref / slip no." name="txn_id" value={formData.txn_id} onChange={handleChange} />
-                </div>
-              </div>
+                  {/* Payment Mode */}
+                  <div className="col-12 mt-1">
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '6px', display: 'block' }}>💳 Payment Mode</label>
+                    <div className="row g-2">
+                      {[
+                        { val: '0', emoji: '💵', label: 'Cash', sub: 'Instant confirm' },
+                        { val: '1', emoji: '⚡', label: 'Online', sub: 'Razorpay / UPI' },
+                      ].map(({ val, emoji, label, sub }) => (
+                        <div className="col-6" key={val}>
+                          <div onClick={() => setFormData(p => ({ ...p, payment: val }))} style={{
+                            border: formData.payment === val ? '2px solid #0284c7' : `1px solid ${border}`,
+                            background: formData.payment === val ? (dk ? '#1e3a5f' : '#EFF6FF') : panelBg,
+                            borderRadius: '10px', padding: '10px 12px', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s'
+                          }}>
+                            <span style={{ fontSize: '1.3rem' }}>{emoji}</span>
+                            <div>
+                              <div style={{ fontWeight: '700', fontSize: '12px', color: text }}>{label}</div>
+                              <div style={{ fontSize: '10px', color: muted }}>{sub}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-              <button className="pf-submit" disabled={loading}>
-                {loading ? 'Processing…' : (<>Confirm Booking <span className="pf-price-pill">₹{totalAmt}</span></>)}
-              </button>
-            </form>
+                  <div className="col-12">
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Transaction ID <span style={{ fontWeight: '400', color: muted }}>(Optional)</span></label>
+                    <input className="form-control form-control-sm" style={{ ...inp }} placeholder="UPI ref / slip no." name="txn_id" value={formData.txn_id} onChange={handleChange} />
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <button type="submit" className="btn w-100 text-white fw-bold" disabled={loading} style={{ background: 'linear-gradient(90deg,#0284c7 0%,#00c2fe 100%)', border: 'none', fontWeight: '800', fontSize: '14px', padding: '11px', borderRadius: '10px', boxShadow: '0 4px 14px rgba(2,132,199,0.35)' }}>
+                    {loading ? 'Processing…' : (
+                      <span>Confirm Booking &nbsp;
+                        <span style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '20px', padding: '2px 12px', fontSize: '13px', fontWeight: '900' }}>₹{totalAmt}</span>
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
 
-        <div className="pf-foot">🌐 chaitanyamuseum.org · 📞 8617528955 · No refunds · Hall tariff subject to management rates</div>
+        <div style={{ textAlign: 'center', marginTop: '8px', color: muted, fontSize: '11px' }}>
+          🌐 chaitanyamuseum.org · 📞 8617528955 · No refunds · Hall tariff subject to management rates
+        </div>
       </div>
     </div>
   );

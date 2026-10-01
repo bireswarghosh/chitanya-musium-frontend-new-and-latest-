@@ -22,7 +22,7 @@ const initialState = {
   activeSubmenu : "",
 }
 
-const superAdminOnlyMenus = ["manage-admins", "manage-roles", "access-control", "activity-dashboard"];
+const superAdminOnlyMenus = ["manage-admins", "activity-dashboard"];
 
 // Map sidebar menu items to permission page_keys
 const menuToPageKey = {

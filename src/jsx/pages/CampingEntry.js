@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import swal from 'sweetalert';
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
+import { ThemeContext } from '../../context/ThemeContext';
 
 const API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/camping';
 
@@ -15,6 +16,21 @@ const INTEREST_OPTIONS = [
 const SOURCE_OPTIONS = ['Online Public Portal', 'Social Media', 'Walk-in', 'Referral', 'Phone', 'Camp Visit', 'Other'];
 
 const CampingEntry = () => {
+  const { background } = useContext(ThemeContext);
+  const dk = background.value === 'dark';
+  const pageBg  = dk ? 'linear-gradient(180deg,#0f172a 0%,#1e293b 100%)' : 'linear-gradient(180deg,#F8FAFC 0%,#EFF6FF 100%)';
+  const cardBg  = dk ? '#1e293b' : '#ffffff';
+  const panelBg = dk ? '#0f172a' : '#F8FAFC';
+  const border  = dk ? '#334155' : '#E2E8F0';
+  const text    = dk ? '#e2e8f0' : '#0F172A';
+  const muted   = dk ? '#94a3b8' : '#64748B';
+  const inputBg = dk ? '#0f172a' : '#ffffff';
+  const inputBdr= dk ? '#475569' : '#CBD5E1';
+  const chipBg  = dk ? '#1e3a5f' : '#EFF6FF';
+  const chipClr = dk ? '#93c5fd' : '#1D4ED8';
+  const chipBdr = dk ? '#1d4ed8' : '#BFDBFE';
+  const inp = { border: `1px solid ${inputBdr}`, borderRadius: '8px', padding: '6px 10px', fontSize: '12.5px', background: inputBg, color: text };
+
   const [activeCampings, setActiveCampings] = useState([]);
   const [selectedCamp, setSelectedCamp] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -352,61 +368,44 @@ const CampingEntry = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%)',
-      color: '#0F172A',
-      padding: '10px 15px',
+      background: pageBg,
+      color: text,
+      padding: '10px 12px',
       display: 'flex',
       flexDirection: 'column',
-      justify: 'center',
       fontFamily: "'Outfit', 'Inter', system-ui, -apple-system, sans-serif"
     }}>
       <div className="container" style={{ maxWidth: '1060px', margin: '0 auto' }}>
         
-        {/* LIGHT ELEGANT HEADER */}
         <div className="text-center mb-2">
-          <div className="d-inline-flex align-items-center justify-content-center mb-1 px-3 py-0.5" style={{
-            background: '#EFF6FF',
-            border: '1px solid #BFDBFE',
-            borderRadius: '50px',
-            color: '#1D4ED8',
-            fontSize: '11px',
-            fontWeight: '700',
-            letterSpacing: '0.5px'
-          }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px', background: chipBg, border: `1px solid ${chipBdr}`, borderRadius: '50px', color: chipClr, fontSize: '11px', fontWeight: '700', letterSpacing: '0.5px', padding: '4px 14px' }}>
             🏛️ SRI CHAITANYA MAHAPRABHU MUSEUM
           </div>
-
-          <h2 style={{
-            fontWeight: '900',
-            fontSize: '22px',
-            color: '#1E3A8A',
-            margin: '2px 0 1px 0'
-          }}>
+          <h2 style={{ fontWeight: '900', fontSize: '20px', color: dk ? '#e2e8f0' : '#1E3A8A', margin: '2px 0 1px 0' }}>
             {selectedCamp ? `${selectedCamp.camping_name} Registration` : 'Camp Registration'}
           </h2>
-          <p style={{ color: '#64748B', fontSize: '12px', margin: 0 }}>
+          <p style={{ color: muted, fontSize: '12px', margin: 0 }}>
             Register online for upcoming event hosted by Sri Chaitanya Mahaprabhu Museum.
           </p>
         </div>
 
-        {/* MAIN 2-COLUMN LIGHT CARD CONTAINER - FITS IN VIEWPORT WITHOUT SCROLLING */}
-        <div className="row g-2 align-items-stretch" style={{ background: '#FFFFFF', borderRadius: '16px', padding: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
+        {/* MAIN 2-COLUMN CARD CONTAINER */}
+        <div className="row g-2 align-items-stretch" style={{ background: cardBg, borderRadius: '16px', padding: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', border: `1px solid ${border}` }}>
           
           {/* EVENT SUMMARY PANEL */}
-          <div className="col-lg-5">
+          <div className="col-md-5">
             <div style={{
-              background: '#F8FAFC',
-              border: '1px solid #E2E8F0',
+              background: panelBg,
+              border: `1px solid ${border}`,
               borderRadius: '16px',
               padding: '20px',
               height: '100%',
               display: 'flex',
-              flexDirection: 'column',
-              justify: 'space-between'
+              flexDirection: 'column'
             }}>
               <div>
                 <div className="d-flex align-items-center justify-content-between mb-3">
-                  <h6 style={{ margin: 0, fontWeight: '800', color: '#1E293B' }}>
+                  <h6 style={{ margin: 0, fontWeight: '800', color: text }}>
                     🏕️ Active Camp Event
                   </h6>
                   <span className="badge bg-success px-2 py-1 rounded-pill" style={{ fontSize: '10px' }}>
@@ -415,7 +414,7 @@ const CampingEntry = () => {
                 </div>
 
                 {activeCampings.length === 0 ? (
-                  <div className="text-center py-4" style={{ color: '#64748B' }}>
+                  <div className="text-center py-4" style={{ color: muted }}>
                     <div style={{ fontSize: '32px', marginBottom: '8px' }}>🏕️</div>
                     <h6 style={{ fontSize: '14px' }}>No Active Camp Events</h6>
                     <p style={{ fontSize: '12px', margin: 0 }}>Currently there are no active camping events open for registration.</p>
@@ -428,15 +427,7 @@ const CampingEntry = () => {
                       </label>
                       <select
                         className="form-select form-select-sm"
-                        style={{
-                          background: '#FFFFFF',
-                          border: '1px solid #CBD5E1',
-                          color: '#0F172A',
-                          borderRadius: '10px',
-                          fontSize: '13px',
-                          padding: '8px 12px',
-                          fontWeight: '600'
-                        }}
+                        style={{ ...inp, fontWeight: '600', padding: '8px 12px', fontSize: '13px', borderRadius: '10px' }}
                         value={formData.camping_id}
                         onChange={handleCampChange}
                       >
@@ -450,46 +441,30 @@ const CampingEntry = () => {
 
                     {selectedCamp && (
                       <div style={{
-                        background: '#EFF6FF',
-                        border: '1px solid #BFDBFE',
+                        background: chipBg,
+                        border: `1px solid ${chipBdr}`,
                         borderRadius: '14px',
                         padding: '14px',
                         marginTop: '10px'
                       }}>
-                        <h6 style={{ fontWeight: '800', color: '#1E40AF', marginBottom: '10px', fontSize: '15px' }}>
+                        <h6 style={{ fontWeight: '800', color: chipClr, marginBottom: '10px', fontSize: '15px' }}>
                           {selectedCamp.camping_name}
                         </h6>
 
-                        <div className="mb-1.5 d-flex align-items-center gap-2" style={{ fontSize: '12.5px', color: '#334155' }}>
-                          <span>📍</span>
-                          <div>
-                            <strong>Location:</strong> {selectedCamp.location || 'Museum Campus'}
-                          </div>
+                        <div className="mb-1 d-flex align-items-center gap-2" style={{ fontSize: '12.5px', color: text }}>
+                          <span>📍</span><div><strong>Location:</strong> {selectedCamp.location || 'Museum Campus'}</div>
                         </div>
-
-                        <div className="mb-1.5 d-flex align-items-center gap-2" style={{ fontSize: '12.5px', color: '#334155' }}>
-                          <span>📅</span>
-                          <div>
-                            <strong>Dates:</strong> {selectedCamp.start_date?.split('T')[0]} to {selectedCamp.end_date?.split('T')[0]}
-                          </div>
+                        <div className="mb-1 d-flex align-items-center gap-2" style={{ fontSize: '12.5px', color: text }}>
+                          <span>📅</span><div><strong>Dates:</strong> {selectedCamp.start_date?.split('T')[0]} to {selectedCamp.end_date?.split('T')[0]}</div>
                         </div>
-
-                        <div className="mb-1.5 d-flex align-items-center gap-2" style={{ fontSize: '12.5px', color: '#334155' }}>
-                          <span>👤</span>
-                          <div>
-                            <strong>Organizer:</strong> {selectedCamp.organizer_name}
-                          </div>
+                        <div className="mb-1 d-flex align-items-center gap-2" style={{ fontSize: '12.5px', color: text }}>
+                          <span>👤</span><div><strong>Organizer:</strong> {selectedCamp.organizer_name}</div>
                         </div>
-
-                        <div className="mb-1.5 d-flex align-items-center gap-2" style={{ fontSize: '12.5px', color: '#334155' }}>
-                          <span>📞</span>
-                          <div>
-                            <strong>Contact:</strong> {selectedCamp.contact_details}
-                          </div>
+                        <div className="mb-1 d-flex align-items-center gap-2" style={{ fontSize: '12.5px', color: text }}>
+                          <span>📞</span><div><strong>Contact:</strong> {selectedCamp.contact_details}</div>
                         </div>
-
                         {selectedCamp.remarks && (
-                          <div className="mt-2 pt-2 border-top border-blue-200" style={{ fontSize: '11.5px', color: '#64748B' }}>
+                          <div className="mt-2 pt-2" style={{ borderTop: `1px solid ${border}`, fontSize: '11.5px', color: muted }}>
                             💬 {selectedCamp.remarks}
                           </div>
                         )}
@@ -499,204 +474,63 @@ const CampingEntry = () => {
                 )}
               </div>
 
-              <div className="mt-3 pt-2 text-center border-top" style={{ fontSize: '11px', color: '#94A3B8' }}>
+              <div className="mt-3 pt-2 text-center" style={{ borderTop: `1px solid ${border}`, fontSize: '11px', color: muted }}>
                 Verified By Sri Chaitanya Museum
               </div>
             </div>
           </div>
 
           {/* COMPACT PUBLIC REGISTRATION FORM PANEL */}
-          <div className="col-lg-7">
+          <div className="col-md-7">
             <div style={{ padding: '8px 12px' }}>
               <div className="d-flex align-items-center justify-content-between mb-2">
-                <h6 style={{ fontWeight: '800', color: '#0F172A', margin: 0, fontSize: '16px' }}>
+                <h6 style={{ fontWeight: '800', color: text, margin: 0, fontSize: '16px' }}>
                   📋 Participant Registration Details
                 </h6>
-                <small style={{ color: '#64748B', fontSize: '11px' }}>Fill in details to get instant pass</small>
+                <small style={{ color: muted, fontSize: '11px' }}>Fill in details to get instant pass</small>
               </div>
 
               <form onSubmit={handleSubmit}>
                 <div className="row g-2">
                   
-                  {/* FULL NAME */}
                   <div className="col-md-6">
-                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
-                      Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      name="patient_name"
-                      placeholder="e.g. Rahul Sharma"
-                      value={formData.patient_name}
-                      onChange={handleChange}
-                      style={{
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '8px',
-                        padding: '6px 10px',
-                        fontSize: '12.5px'
-                      }}
-                      required
-                    />
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Full Name *</label>
+                    <input type="text" className="form-control form-control-sm" name="patient_name" placeholder="e.g. Rahul Sharma" value={formData.patient_name} onChange={handleChange} style={{ ...inp }} required />
                   </div>
-
-                  {/* PHONE NUMBER */}
                   <div className="col-md-6">
-                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      className="form-control form-control-sm"
-                      name="phone"
-                      placeholder="10-digit mobile number"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      style={{
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '8px',
-                        padding: '6px 10px',
-                        fontSize: '12.5px'
-                      }}
-                      required
-                    />
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Phone Number *</label>
+                    <input type="tel" className="form-control form-control-sm" name="phone" placeholder="10-digit mobile number" value={formData.phone} onChange={handleChange} style={{ ...inp }} required />
                   </div>
-
-                  {/* EMAIL */}
                   <div className="col-md-6">
-                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      className="form-control form-control-sm"
-                      name="email"
-                      placeholder="name@example.com"
-                      value={formData.email}
-                      onChange={handleChange}
-                      style={{
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '8px',
-                        padding: '6px 10px',
-                        fontSize: '12.5px'
-                      }}
-                    />
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Email Address</label>
+                    <input type="email" className="form-control form-control-sm" name="email" placeholder="name@example.com" value={formData.email} onChange={handleChange} style={{ ...inp }} />
                   </div>
-
-                  {/* AGE */}
                   <div className="col-md-6">
-                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
-                      Age (Years)
-                    </label>
-                    <input
-                      type="number"
-                      className="form-control form-control-sm"
-                      name="age"
-                      placeholder="e.g. 28"
-                      value={formData.age}
-                      onChange={handleChange}
-                      min="1"
-                      max="120"
-                      style={{
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '8px',
-                        padding: '6px 10px',
-                        fontSize: '12.5px'
-                      }}
-                    />
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Age (Years)</label>
+                    <input type="number" className="form-control form-control-sm" name="age" placeholder="e.g. 28" value={formData.age} onChange={handleChange} min="1" max="120" style={{ ...inp }} />
                   </div>
-
-                  {/* INTEREST LEVEL */}
                   <div className="col-md-6">
-                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
-                      Interest Level *
-                    </label>
-                    <select
-                      className="form-select form-select-sm"
-                      name="interest"
-                      value={formData.interest}
-                      onChange={handleChange}
-                      style={{
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '8px',
-                        padding: '6px 10px',
-                        fontSize: '12.5px'
-                      }}
-                      required
-                    >
-                      {INTEREST_OPTIONS.map(opt => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Interest Level *</label>
+                    <select className="form-select form-select-sm" name="interest" value={formData.interest} onChange={handleChange} style={{ ...inp }} required>
+                      {INTEREST_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                     </select>
                   </div>
-
-                  {/* SOURCE */}
                   <div className="col-md-6">
-                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
-                      Registration Source *
-                    </label>
-                    <select
-                      className="form-select form-select-sm"
-                      name="source"
-                      value={formData.source}
-                      onChange={handleChange}
-                      style={{
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '8px',
-                        padding: '6px 10px',
-                        fontSize: '12.5px'
-                      }}
-                      required
-                    >
-                      {SOURCE_OPTIONS.map(s => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Registration Source *</label>
+                    <select className="form-select form-select-sm" name="source" value={formData.source} onChange={handleChange} style={{ ...inp }} required>
+                      {SOURCE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
-
-                  {/* PREFERRED DATE */}
                   <div className="col-md-12">
-                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
-                      Preferred Registration Date *
-                    </label>
-                    <input
-                      type="date"
-                      className="form-control form-control-sm"
-                      name="date"
-                      value={formData.date}
-                      onChange={handleChange}
-                      style={{
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '8px',
-                        padding: '6px 10px',
-                        fontSize: '12.5px'
-                      }}
-                      required
-                    />
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Preferred Registration Date *</label>
+                    <input type="date" className="form-control form-control-sm" name="date" value={formData.date} onChange={handleChange} style={{ ...inp }} required />
                   </div>
 
                 </div>
 
                 <div className="mt-3">
-                  <button
-                    type="submit"
-                    className="btn btn-primary w-100"
-                    disabled={loading || activeCampings.length === 0}
-                    style={{
-                      background: 'linear-gradient(90deg, #2563EB 0%, #1D4ED8 100%)',
-                      border: 'none',
-                      color: '#FFFFFF',
-                      fontWeight: '800',
-                      fontSize: '14px',
-                      padding: '10px',
-                      borderRadius: '10px',
-                      boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
-                    }}
-                  >
+                  <button type="submit" className="btn w-100 text-white fw-bold" disabled={loading || activeCampings.length === 0}
+                    style={{ background: 'linear-gradient(90deg,#2563EB 0%,#1D4ED8 100%)', border: 'none', fontWeight: '800', fontSize: '14px', padding: '10px', borderRadius: '10px', boxShadow: '0 4px 14px rgba(37,99,235,0.3)' }}>
                     {loading ? 'Submitting Registration...' : 'Submit Registration & Generate Pass 🎫'}
                   </button>
                 </div>

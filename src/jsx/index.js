@@ -118,6 +118,8 @@ const Markup = () => {
     /// Dashboard
     { url: "", component: <Home/> },
     { url: "dashboard", component: <Home/> },
+    { url: "manage-roles", component: <ManageAdmins/> },
+    { url: "access-control", component: <ManageAdmins/> },
 	  { url: "dashboard-dark", component: <DashboardDark /> },
     { url: "guest-list", component: <GuestList /> },
     { url: "guest-detail", component: <GuestDetail /> },

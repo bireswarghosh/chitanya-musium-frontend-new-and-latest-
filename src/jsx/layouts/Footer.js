@@ -1,4 +1,4 @@
- import React from "react";
+import React from "react";
 
 const Footer = () => {
   var d = new Date();
@@ -6,11 +6,9 @@ const Footer = () => {
     <div className="footer">
       <div className="copyright">
         <p>
-          Copyright © Designed &amp; Developed by{" "}
-          <a href="http://dexignzone.com/" target="_blank" rel="noreferrer">
-            DexignZone
-          </a>{" "}
-          {d.getFullYear()}
+          © {d.getFullYear()} All Rights Reserved &nbsp;·&nbsp; Made with{" "}
+          <span style={{ color: "#e25555" }}>♥</span> by{" "}
+          <strong>Appstrice</strong>
         </p>
       </div>
     </div>
