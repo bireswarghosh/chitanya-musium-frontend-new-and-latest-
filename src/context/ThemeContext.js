@@ -88,14 +88,16 @@ const ThemeContextProvider = (props) => {
   };
   
   
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (menuToggle) {
       body.classList.add("menu-toggle");
     } else {
       body.classList.remove("menu-toggle");
     }
-  }, [menuToggle]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [menuToggle]);
   
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
 		let resizeWindow = () => {
 			setWindowWidth(window.innerWidth);

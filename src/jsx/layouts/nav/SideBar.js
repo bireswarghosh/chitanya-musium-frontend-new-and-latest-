@@ -46,7 +46,7 @@ const SideBar = () => {
   const isSuperAdmin = role === 'superadmin' || role === '1' || role === 1;
   const [heartBtn, setHeartBtn] = useState();
   const [state, setState] = useReducer(reducer, initialState);
-  const [permKey, setPermKey] = useState(0);
+  const [permKey, setPermKey] = useState(0); // eslint-disable-line no-unused-vars
 
   useEffect(() => {
     // Re-check permissions on mount and storage change

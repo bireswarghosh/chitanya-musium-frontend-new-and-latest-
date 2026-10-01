@@ -538,7 +538,7 @@ const MuseumEntry = () => {
 
   const authStatus = localStorage.getItem('isAuthenticated');
   const role = localStorage.getItem('userRole'); // eslint-disable-line no-unused-vars
-
+  const [formData, setFormData] = useState({
     firstname: '',
     phone: '',
     address: '',
