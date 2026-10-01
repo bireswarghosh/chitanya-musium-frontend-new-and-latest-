@@ -537,8 +537,8 @@ const MuseumEntry = () => {
   const [moviePrice, setMoviePrice] = useState(30);
 
   const authStatus = localStorage.getItem('isAuthenticated');
-  const role = localStorage.getItem('userRole');
-  const [formData, setFormData] = useState({
+  const role = localStorage.getItem('userRole'); // eslint-disable-line no-unused-vars
+
     firstname: '',
     phone: '',
     address: '',

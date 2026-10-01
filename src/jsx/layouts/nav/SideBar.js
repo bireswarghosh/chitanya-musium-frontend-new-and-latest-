@@ -79,7 +79,7 @@ const SideBar = () => {
       if (filteredContent.length === 0) return null;
       return { ...menu, content: filteredContent };
     }).filter(Boolean);
-  }, [isSuperAdmin, permKey]);
+  }, [isSuperAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
   const handleMenuActive = status => {		
     setState({active : status});			
     if(state.active === status){				

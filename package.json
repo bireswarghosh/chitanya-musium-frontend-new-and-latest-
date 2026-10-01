@@ -9,6 +9,7 @@
     "@fullcalendar/interaction": "^6.1.5",
     "@fullcalendar/react": "^6.1.5",
     "@fullcalendar/timegrid": "^6.1.5",
+    "@genkit-ai/mcp": "^1.42.0",
     "@hello-pangea/dnd": "^16.2.0",
     "@loadable/component": "^5.15.3",
     "@n8tb1t/use-scroll-position": "^2.0.3",

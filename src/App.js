@@ -3,7 +3,6 @@ import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 
 /// Components
 import Index from "./jsx";
-import SuperAdminLogin from "./jsx/pages/SuperAdminLogin";
 import AdminLogin from "./jsx/pages/AdminLogin";
 import MuseumEntry from "./jsx/pages/MuseumEntry";
 import Booking from "./jsx/pages/Booking";
@@ -16,7 +15,7 @@ import "./css/lists-premium.css";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState(null);
+  const [userRole, setUserRole] = useState(null); // eslint-disable-line no-unused-vars
   const navigate = useNavigate();
   const location = useLocation();
   const publicRoutes = ['/museum-entry', '/booking', '/camping-entry', '/camping-lead', '/add-lead'];

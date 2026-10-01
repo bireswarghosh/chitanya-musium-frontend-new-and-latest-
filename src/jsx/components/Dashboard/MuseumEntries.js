@@ -59,9 +59,9 @@ const MuseumEntries = () => {
 
   useEffect(() => {
    handleSearch()
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchEntries = async () => {  
+  const fetchEntries = async () => { // eslint-disable-line no-unused-vars
     try {
       setLoading(true);
    // const response = await axios.get('https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum');

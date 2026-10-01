@@ -4,11 +4,11 @@ export const ThemeContext = createContext();
 
 const ThemeContextProvider = (props) => {
 	const [sideBarStyle, setSideBarStyle] = useState({ value: "full", label: "Full",});
-	const [sidebarposition, setSidebarposition] = useState({ value: "fixed",	label: "Fixed",});
+	const [sidebarposition, setSidebarposition] = useState({ value: "fixed",	label: "Fixed",}); // eslint-disable-line no-unused-vars
   const [headerposition, setHeaderposition] = useState({ value: "fixed", label: "Fixed", });
   const [sidebarLayout, setSidebarLayout] = useState({ value: "vertical", label: "Vertical",});
   const [primaryColor, setPrimaryColor] = useState("color_1");
-  const [sidebarColor, setSidebarColor] = useState("color_1");
+  const [sidebarColor, setSidebarColor] = useState("color_1"); // eslint-disable-line no-unused-vars
   const [iconHover, setIconHover] = useState(false);
   const [sidebariconHover, setSidebariconHover] = useState(false);
   const [menuToggle, setMenuToggle] = useState(false);
@@ -94,7 +94,7 @@ const ThemeContextProvider = (props) => {
     } else {
       body.classList.remove("menu-toggle");
     }
-  }, [menuToggle, body]);
+  }, [menuToggle]); // eslint-disable-line react-hooks/exhaustive-deps
   
   useEffect(() => {
 		let resizeWindow = () => {

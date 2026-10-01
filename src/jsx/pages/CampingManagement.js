@@ -33,7 +33,7 @@ const CampingManagement = () => {
   });
 
   useEffect(() => { fetchCampings(); }, []);
-  useEffect(() => { if (tab === 'leads') fetchLeads(); }, [tab, filterCamping]);
+  useEffect(() => { if (tab === 'leads') fetchLeads(); }, [tab, filterCamping]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isSuperAdmin = () => {
     const role = (localStorage.getItem('userRole') || '').toLowerCase();

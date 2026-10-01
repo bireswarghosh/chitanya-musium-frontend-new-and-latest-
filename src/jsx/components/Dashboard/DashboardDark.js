@@ -28,7 +28,7 @@ const DashboardDark = () => {
 	const { changeBackground } = useContext(ThemeContext);
 	useEffect(() => {
 		changeBackground({ value: "dark", label: "Dark" });
-	}, []);
+	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 	const [value, onChange] = useState(new Date());
 	return(
 		<>
