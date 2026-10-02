@@ -85,3 +85,4 @@ export const rateSettingsService = {
     return payload;
   }
 };
+

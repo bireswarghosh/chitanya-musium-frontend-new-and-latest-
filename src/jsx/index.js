@@ -25,7 +25,6 @@ import ManageRoles from "./components/Dashboard/ManageRoles";
 import MuseumEntries from "./components/Dashboard/MuseumEntries";
 
 /// App
-import AppProfile from "./components/AppsMenu/AppProfile/AppProfile";
 import Compose from "./components/AppsMenu/Email/Compose/Compose";
 import Inbox from "./components/AppsMenu/Email/Inbox/Inbox";
 import Read from "./components/AppsMenu/Email/Read/Read";
@@ -107,7 +106,6 @@ import Booking from "./pages/Booking";
 import BookingList from "./pages/BookingList";
 import AccessControl from "./pages/AccessControl";
 import ActivityDashboard from "./pages/ActivityDashboard";
-import RateSettings from "./pages/RateSettings";
 import { ThemeContext } from "../context/ThemeContext";
 
 //Scroll To Top
@@ -210,7 +208,6 @@ const Markup = () => {
     { url: "booking-list", component: <BookingList/> },
     { url: "access-control", component: <AccessControl/> },
     { url: "activity-dashboard", component: <ActivityDashboard/> },
-    { url: "rate-settings", component: <RateSettings/> },
     
   ];
 

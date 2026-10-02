@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import swal from 'sweetalert';
 import { ThemeContext } from '../../context/ThemeContext';
-import { rateSettingsService } from '../../services/RateSettingsService';
 
 const MuseumEntry = () => {
   const { background } = useContext(ThemeContext);
@@ -26,9 +25,8 @@ const MuseumEntry = () => {
   const discBg   = dk ? '#1c1a0a' : '#FFFBEB';
   const discBdr  = dk ? '#854d0e' : '#F59E0B';
 
-  const cachedRates = rateSettingsService.getCachedRates();
-  const [galleryPrice, setGalleryPrice] = useState(cachedRates.museum_gallery_rate);
-  const [moviePrice, setMoviePrice] = useState(cachedRates.museum_movie_rate);
+  const [galleryPrice, setGalleryPrice] = useState(50);
+  const [moviePrice, setMoviePrice] = useState(30);
   const authStatus = localStorage.getItem('isAuthenticated');
   const isLoggedIn = !!authStatus;
   // eslint-disable-next-line no-unused-vars
@@ -38,32 +36,11 @@ const MuseumEntry = () => {
 
   const [formData, setFormData] = useState({
     firstname: '', phone: '', address: '',
-    num_of_persons: '1', total_amt: (cachedRates.museum_gallery_rate || 50).toString(),
+    num_of_persons: '1', total_amt: '50',
     payment: defaultPayment, gallery: '1',
     movie_show: '0', discount: '0', txn_id: ''
   });
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const loadRates = async () => {
-      const latest = await rateSettingsService.fetchRates();
-      if (!isLoggedIn) {
-        setGalleryPrice(latest.museum_gallery_rate);
-        setMoviePrice(latest.museum_movie_rate);
-      }
-    };
-    loadRates();
-
-    const handleUpdated = () => {
-      const cached = rateSettingsService.getCachedRates();
-      if (!isLoggedIn) {
-        setGalleryPrice(cached.museum_gallery_rate);
-        setMoviePrice(cached.museum_movie_rate);
-      }
-    };
-    window.addEventListener('scmm_rates_updated', handleUpdated);
-    return () => window.removeEventListener('scmm_rates_updated', handleUpdated);
-  }, [isLoggedIn]);
 
   useEffect(() => {
     const persons = Number(formData.num_of_persons) || 0;
@@ -164,21 +141,7 @@ const MuseumEntry = () => {
             <div style={{ background: panelBg, border: `1px solid ${border}`, borderRadius: '14px', padding: '16px', height: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div className="d-flex align-items-center justify-content-between">
                 <h6 style={{ margin: 0, fontWeight: '800', color: text, fontSize: '14px' }}>🎟️ Ticket Rates</h6>
-                <div className="d-flex align-items-center gap-2">
-                  <span style={{ 
-                    background: isLoggedIn ? chipBg : (dk ? '#1e293b' : '#F1F5F9'), 
-                    color: isLoggedIn ? chipClr : muted, 
-                    border: `1px solid ${isLoggedIn ? chipBdr : border}`, 
-                    borderRadius: '20px', fontSize: '10px', fontWeight: '700', padding: '2px 10px' 
-                  }}>
-                    {isLoggedIn ? '✏️ Editable (Admin)' : '🔒 Standard Tariff'}
-                  </span>
-                  {isLoggedIn && (
-                    <a href="/rate-settings" title="Configure Default Rates in Settings" style={{ fontSize: '12px', color: '#0284c7', textDecoration: 'none', fontWeight: '700' }}>
-                      ⚙️ Settings
-                    </a>
-                  )}
-                </div>
+                <span style={{ background: chipBg, color: chipClr, border: `1px solid ${chipBdr}`, borderRadius: '20px', fontSize: '10px', fontWeight: '700', padding: '2px 10px' }}>✏️ Editable</span>
               </div>
 
               {/* Museum Entry Rate Card */}
@@ -196,32 +159,10 @@ const MuseumEntry = () => {
                     <input type="number" className="form-control form-control-sm text-center fw-bold" style={{ ...inp }} name="num_of_persons" value={formData.num_of_persons} onChange={handleChange} min="1" />
                   </div>
                   <div className="col-6">
-                    <label style={{ fontSize: '11px', fontWeight: '700', color: muted, display: 'block', marginBottom: '3px' }}>
-                      Rate (₹) {!isLoggedIn && <span style={{ fontSize: '9px', color: muted }}>[Fixed]</span>}
-                    </label>
+                    <label style={{ fontSize: '11px', fontWeight: '700', color: muted, display: 'block', marginBottom: '3px' }}>Rate (₹)</label>
                     <div className="input-group input-group-sm">
                       <span className="input-group-text fw-bold text-primary" style={{ borderRadius: '8px 0 0 8px', fontSize: '12px', background: inputBg, border: `1px solid ${inputBdr}`, color: '#0284c7' }}>₹</span>
-                      <input 
-                        type="number" 
-                        className="form-control text-center fw-bold text-primary border-start-0" 
-                        style={{ 
-                          borderRadius: '0 8px 8px 0', 
-                          fontSize: '13px', 
-                          background: isLoggedIn ? inputBg : (dk ? '#1e293b' : '#f8fafc'), 
-                          color: '#0284c7', 
-                          border: `1px solid ${inputBdr}`,
-                          cursor: isLoggedIn ? 'text' : 'not-allowed'
-                        }} 
-                        value={galleryPrice} 
-                        min="0" 
-                        readOnly={!isLoggedIn}
-                        disabled={!isLoggedIn}
-                        onChange={(e) => { 
-                          if (!isLoggedIn) return;
-                          const v = e.target.value; 
-                          setGalleryPrice(v === '' ? '' : Math.max(0, Number(v))); 
-                        }} 
-                      />
+                      <input type="number" className="form-control text-center fw-bold text-primary border-start-0" style={{ borderRadius: '0 8px 8px 0', fontSize: '13px', background: inputBg, color: '#0284c7', border: `1px solid ${inputBdr}` }} value={galleryPrice} min="0" onChange={(e) => { const v = e.target.value; setGalleryPrice(v === '' ? '' : Math.max(0, Number(v))); }} />
                     </div>
                   </div>
                 </div>
@@ -243,32 +184,10 @@ const MuseumEntry = () => {
                     <input type="number" className="form-control form-control-sm text-center fw-bold" style={{ ...inp }} name="movie_show" value={formData.movie_show} onChange={handleChange} min="0" max={formData.num_of_persons} />
                   </div>
                   <div className="col-6">
-                    <label style={{ fontSize: '11px', fontWeight: '700', color: muted, display: 'block', marginBottom: '3px' }}>
-                      Rate (₹) {!isLoggedIn && <span style={{ fontSize: '9px', color: muted }}>[Fixed]</span>}
-                    </label>
+                    <label style={{ fontSize: '11px', fontWeight: '700', color: muted, display: 'block', marginBottom: '3px' }}>Rate (₹)</label>
                     <div className="input-group input-group-sm">
                       <span className="input-group-text fw-bold text-success" style={{ borderRadius: '8px 0 0 8px', fontSize: '12px', background: inputBg, border: `1px solid ${inputBdr}`, color: '#059669' }}>₹</span>
-                      <input 
-                        type="number" 
-                        className="form-control text-center fw-bold text-success border-start-0" 
-                        style={{ 
-                          borderRadius: '0 8px 8px 0', 
-                          fontSize: '13px', 
-                          background: isLoggedIn ? inputBg : (dk ? '#1e293b' : '#f8fafc'), 
-                          color: '#059669', 
-                          border: `1px solid ${inputBdr}`,
-                          cursor: isLoggedIn ? 'text' : 'not-allowed'
-                        }} 
-                        value={moviePrice} 
-                        min="0" 
-                        readOnly={!isLoggedIn}
-                        disabled={!isLoggedIn}
-                        onChange={(e) => { 
-                          if (!isLoggedIn) return;
-                          const v = e.target.value; 
-                          setMoviePrice(v === '' ? '' : Math.max(0, Number(v))); 
-                        }} 
-                      />
+                      <input type="number" className="form-control text-center fw-bold text-success border-start-0" style={{ borderRadius: '0 8px 8px 0', fontSize: '13px', background: inputBg, color: '#059669', border: `1px solid ${inputBdr}` }} value={moviePrice} min="0" onChange={(e) => { const v = e.target.value; setMoviePrice(v === '' ? '' : Math.max(0, Number(v))); }} />
                     </div>
                   </div>
                 </div>

@@ -25,10 +25,6 @@ export const MenuList = [
                 title: 'Activity Monitor',
                 to: 'activity-dashboard',
             },
-            {
-                title: 'Rate Settings',
-                to: 'rate-settings',
-            },
         ],
     },
     // Museum

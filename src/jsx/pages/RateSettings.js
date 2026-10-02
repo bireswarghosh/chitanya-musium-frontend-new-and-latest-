@@ -292,3 +292,4 @@ const RateSettings = () => {
 };
 
 export default RateSettings;
+
