@@ -37,27 +37,33 @@ const BookingList = () => {
       b.fullname?.toLowerCase().includes(search.toLowerCase()) ||
       b.phone?.includes(search) ||
       b.email?.toLowerCase().includes(search.toLowerCase()) ||
+      b.aadhar?.includes(search) ||
       b.txn_id?.includes(search);
     const matchDate = !filterDate || b.booking_date?.split('T')[0] === filterDate;
     const matchPayment = !filterPayment || b.payment === filterPayment;
     return matchSearch && matchDate && matchPayment;
   });
 
+  const getPaymentLabel = (p) => {
+    if (p === '1') return 'Online (100%)';
+    if (p === '2') return 'Online (50%)';
+    return 'Cash';
+  };
+
   // EXPORT DATA
   const getExportData = () => filtered.map((b, i) => ({
     'SL': i + 1,
     'Name': b.fullname,
     'Phone': b.phone,
+    'Aadhar': b.aadhar || '-',
     'Email': b.email,
     'Date': b.booking_date?.split('T')[0],
     'Time': b.booking_time,
     'Hours': b.hours,
     'Extra Hrs': b.extra_hours,
-    'Service': b.service_charge,
-    'Booking': b.booking_charge,
-    'Extra': b.extra_charge,
     'Total': b.total_amt,
-    'Payment': b.payment === '1' ? 'Online' : 'Cash',
+    'Paid': b.paid_amt || b.total_amt,
+    'Payment': getPaymentLabel(b.payment),
     'Txn ID': b.txn_id || '-'
   }));
 
@@ -80,10 +86,10 @@ const BookingList = () => {
     doc.text('Booking Report', 14, 15);
     doc.autoTable({
       startY: 20,
-      head: [['#', 'Name', 'Phone', 'Date', 'Hours', 'Total', 'Payment', 'Txn ID']],
+      head: [['#', 'Name', 'Phone', 'Aadhar', 'Date', 'Hours', 'Total', 'Paid', 'Payment', 'Txn ID']],
       body: filtered.map((b, i) => [
-        i + 1, b.fullname, b.phone, b.booking_date?.split('T')[0],
-        b.hours, `₹${b.total_amt}`, b.payment === '1' ? 'Online' : 'Cash', b.txn_id || '-'
+        i + 1, b.fullname, b.phone, b.aadhar || '-', b.booking_date?.split('T')[0],
+        b.hours, `₹${b.total_amt}`, `₹${b.paid_amt || b.total_amt}`, getPaymentLabel(b.payment), b.txn_id || '-'
       ]),
       styles: { fontSize: 8 }
     });
@@ -91,9 +97,9 @@ const BookingList = () => {
   };
 
   const exportWord = () => {
-    let html = `<h2>Booking Report</h2><table border="1" cellpadding="5" cellspacing="0"><tr><th>#</th><th>Name</th><th>Phone</th><th>Date</th><th>Hours</th><th>Total</th><th>Payment</th><th>Txn ID</th></tr>`;
+    let html = `<h2>Booking Report</h2><table border="1" cellpadding="5" cellspacing="0"><tr><th>#</th><th>Name</th><th>Phone</th><th>Aadhar</th><th>Date</th><th>Hours</th><th>Total</th><th>Paid</th><th>Payment</th><th>Txn ID</th></tr>`;
     filtered.forEach((b, i) => {
-      html += `<tr><td>${i + 1}</td><td>${b.fullname}</td><td>${b.phone}</td><td>${b.booking_date?.split('T')[0]}</td><td>${b.hours}</td><td>₹${b.total_amt}</td><td>${b.payment === '1' ? 'Online' : 'Cash'}</td><td>${b.txn_id || '-'}</td></tr>`;
+      html += `<tr><td>${i + 1}</td><td>${b.fullname}</td><td>${b.phone}</td><td>${b.aadhar || '-'}</td><td>${b.booking_date?.split('T')[0]}</td><td>${b.hours}</td><td>₹${b.total_amt}</td><td>₹${b.paid_amt || b.total_amt}</td><td>${getPaymentLabel(b.payment)}</td><td>${b.txn_id || '-'}</td></tr>`;
     });
     html += '</table>';
     const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
@@ -105,12 +111,13 @@ const BookingList = () => {
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4>📋 Booking List</h4>
         <div className="d-flex gap-2 flex-wrap">
-          <input className="form-control" placeholder="Search name/phone/txn..." value={search} onChange={e => setSearch(e.target.value)} style={{ width: 180 }} />
+          <input className="form-control" placeholder="Search name/phone/aadhar/txn..." value={search} onChange={e => setSearch(e.target.value)} style={{ width: 220 }} />
           <input type="date" className="form-control" value={filterDate} onChange={e => setFilterDate(e.target.value)} style={{ width: 160 }} />
-          <select className="form-control" value={filterPayment} onChange={e => setFilterPayment(e.target.value)} style={{ width: 120 }}>
-            <option value="">All</option>
+          <select className="form-control" value={filterPayment} onChange={e => setFilterPayment(e.target.value)} style={{ width: 150 }}>
+            <option value="">All Payments</option>
             <option value="0">Cash</option>
-            <option value="1">Online</option>
+            <option value="1">Online (100%)</option>
+            <option value="2">Online (50%)</option>
           </select>
         </div>
       </div>
@@ -129,7 +136,7 @@ const BookingList = () => {
             <table className="table table-hover mb-0">
               <thead className="bg-light">
                 <tr>
-                  <th>Action</th><th>#</th><th>Name</th><th>Phone</th><th>Date</th><th>Time</th><th>Hours</th><th>Extra</th><th>Total</th><th>Payment</th><th>Txn ID</th>
+                  <th>Action</th><th>#</th><th>Name</th><th>Phone</th><th>Aadhar</th><th>Date</th><th>Time</th><th>Hours</th><th>Extra</th><th>Total</th><th>Paid</th><th>Payment</th><th>Txn ID</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,16 +146,22 @@ const BookingList = () => {
                     <td>{i + 1}</td>
                     <td>{b.fullname}</td>
                     <td>{b.phone}</td>
+                    <td><small>{b.aadhar || '-'}</small></td>
                     <td>{b.booking_date?.split('T')[0]}</td>
                     <td>{b.booking_time}</td>
-                    <td>{b.hours}</td>
-                    <td>{b.extra_hours}</td>
-                    <td>₹{b.total_amt}</td>
-                    <td><span className={`badge ${b.payment === '1' ? 'bg-success' : 'bg-warning'}`}>{b.payment === '1' ? 'Online' : 'Cash'}</span></td>
-                    <td>{b.txn_id || '-'}</td>
+                    <td>{b.hours}h</td>
+                    <td>{b.extra_hours}h</td>
+                    <td><strong>₹{b.total_amt}</strong></td>
+                    <td><span className="text-success fw-bold">₹{b.paid_amt || b.total_amt}</span></td>
+                    <td>
+                      <span className={`badge ${b.payment === '1' ? 'bg-success' : b.payment === '2' ? 'bg-info' : 'bg-warning'}`}>
+                        {getPaymentLabel(b.payment)}
+                      </span>
+                    </td>
+                    <td><small>{b.txn_id || '-'}</small></td>
                   </tr>
                 ))}
-                {filtered.length === 0 && <tr><td colSpan="11" className="text-center py-4">No bookings found</td></tr>}
+                {filtered.length === 0 && <tr><td colSpan="13" className="text-center py-4">No bookings found</td></tr>}
               </tbody>
             </table>
           </div>

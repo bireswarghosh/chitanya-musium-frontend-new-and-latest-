@@ -28,13 +28,16 @@ const MuseumEntry = () => {
   const [galleryPrice, setGalleryPrice] = useState(50);
   const [moviePrice, setMoviePrice] = useState(30);
   const authStatus = localStorage.getItem('isAuthenticated');
+  const isLoggedIn = !!authStatus;
   // eslint-disable-next-line no-unused-vars
   const role = localStorage.getItem('userRole');
+
+  const defaultPayment = isLoggedIn ? '0' : '1';
 
   const [formData, setFormData] = useState({
     firstname: '', phone: '', address: '',
     num_of_persons: '1', total_amt: '50',
-    payment: '0', gallery: '1',
+    payment: defaultPayment, gallery: '1',
     movie_show: '0', discount: '0', txn_id: ''
   });
   const [loading, setLoading] = useState(false);
@@ -75,18 +78,24 @@ const MuseumEntry = () => {
       setLoading(false);
       return swal("Error!", "Movie tickets cannot exceed persons", "error");
     }
-    if (formData.payment === '1') {
+    const total = Number(formData.total_amt) || 0;
+    const halfAmt = Math.ceil(total / 2);
+    const payAmt = formData.payment === '2' ? halfAmt : total;
+
+    if (formData.payment === '1' || formData.payment === '2') {
       try {
-        const { data: order } = await axios.post('https://chitanya-musium-backend-new-and-latest.onrender.com/api/razorpay/create-order', { amount: formData.total_amt });
+        const { data: order } = await axios.post('https://chitanya-musium-backend-new-and-latest.onrender.com/api/razorpay/create-order', { amount: payAmt });
         const options = {
           key: 'rzp_live_RkF1Uzk5QpuC1K', amount: order.amount, currency: order.currency || 'INR',
-          name: 'Sri Chaitanya Mahaprabhu Museum', description: 'Entry Ticket Payment', order_id: order.id,
+          name: 'Sri Chaitanya Mahaprabhu Museum',
+          description: formData.payment === '2' ? '50% Advance Entry Payment' : 'Full Entry Payment',
+          order_id: order.id,
           prefill: { name: formData.firstname || '', contact: formData.phone || '' },
           handler: async function (response) {
-            const updatedData = { ...formData, payment: '1', txn_id: response.razorpay_payment_id };
+            const updatedData = { ...formData, payment: formData.payment, txn_id: response.razorpay_payment_id };
             const res = await axios.post('https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum', updatedData);
-            swal("Success!", "Payment Successful & Entry Created!", "success").then(() => handlePrint(res.data));
-            setFormData({ firstname: '', phone: '', address: '', num_of_persons: '1', total_amt: (Number(galleryPrice) || 50).toString(), payment: '0', gallery: '1', movie_show: '0', discount: '0', txn_id: '' });
+            swal("Success!", formData.payment === '2' ? `50% Advance ₹${payAmt} paid! Remaining ₹${total - payAmt} due at counter.` : "Payment Successful & Entry Created!", "success").then(() => handlePrint(res.data));
+            setFormData({ firstname: '', phone: '', address: '', num_of_persons: '1', total_amt: (Number(galleryPrice) || 50).toString(), payment: defaultPayment, gallery: '1', movie_show: '0', discount: '0', txn_id: '' });
           },
           theme: { color: '#3399cc' }
         };
@@ -97,10 +106,11 @@ const MuseumEntry = () => {
       finally { setLoading(false); }
       return;
     }
+    // Cash (admin only)
     try {
       const res = await axios.post('https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum', formData);
       swal("Success!", "Entry Created!", "success").then(() => handlePrint(res.data));
-      setFormData({ firstname: '', phone: '', address: '', num_of_persons: '1', total_amt: (Number(galleryPrice) || 50).toString(), payment: '0', gallery: '1', movie_show: '0', discount: '0', txn_id: '' });
+      setFormData({ firstname: '', phone: '', address: '', num_of_persons: '1', total_amt: (Number(galleryPrice) || 50).toString(), payment: defaultPayment, gallery: '1', movie_show: '0', discount: '0', txn_id: '' });
     } catch { swal("Error!", "Failed", "error"); }
     finally { setLoading(false); }
   };
@@ -242,21 +252,27 @@ const MuseumEntry = () => {
                   {/* Payment Mode */}
                   <div className="col-12 mt-1">
                     <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '6px', display: 'block' }}>💳 Payment Mode</label>
+                    {!isLoggedIn && (
+                      <div style={{ background: dk ? '#1c1a0a' : '#fffbeb', border: `1px solid ${dk ? '#854d0e' : '#f59e0b'}`, borderRadius: '8px', padding: '6px 10px', marginBottom: '8px', fontSize: '11px', color: dk ? '#fbbf24' : '#92400e' }}>
+                        ⚠️ Guest booking requires minimum 50% advance payment online.
+                      </div>
+                    )}
                     <div className="row g-2">
                       {[
-                        { val: '0', emoji: '💵', label: 'Cash', sub: 'Instant pass' },
-                        { val: '1', emoji: '⚡', label: 'Online', sub: 'Razorpay / UPI' },
+                        ...(isLoggedIn ? [{ val: '0', emoji: '💵', label: 'Cash', sub: 'Instant pass' }] : []),
+                        { val: '1', emoji: '⚡', label: 'Online – Full', sub: `Pay ₹${formData.total_amt}` },
+                        { val: '2', emoji: '💳', label: 'Online – 50%', sub: `Pay ₹${Math.ceil(Number(formData.total_amt)/2)} now` },
                       ].map(({ val, emoji, label, sub }) => (
-                        <div className="col-6" key={val}>
+                        <div className={isLoggedIn ? 'col-4' : 'col-6'} key={val}>
                           <div onClick={() => setFormData(prev => ({ ...prev, payment: val }))} style={{
                             border: formData.payment === val ? '2px solid #0284c7' : `1px solid ${border}`,
                             background: formData.payment === val ? (dk ? '#1e3a5f' : '#EFF6FF') : panelBg,
-                            borderRadius: '10px', padding: '10px 12px', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s'
+                            borderRadius: '10px', padding: '10px 8px', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s'
                           }}>
-                            <span style={{ fontSize: '1.3rem' }}>{emoji}</span>
+                            <span style={{ fontSize: '1.2rem' }}>{emoji}</span>
                             <div>
-                              <div style={{ fontWeight: '700', fontSize: '12px', color: text }}>{label}</div>
+                              <div style={{ fontWeight: '700', fontSize: '11px', color: text }}>{label}</div>
                               <div style={{ fontSize: '10px', color: muted }}>{sub}</div>
                             </div>
                           </div>
@@ -280,7 +296,7 @@ const MuseumEntry = () => {
                       </span>
                     ) : (
                       <span>Confirm & Print Entry Pass &nbsp;
-                        <span style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '20px', padding: '2px 12px', fontSize: '13px', fontWeight: '900' }}>₹{formData.total_amt}</span>
+                        <span style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '20px', padding: '2px 12px', fontSize: '13px', fontWeight: '900' }}>₹{formData.payment === '2' ? Math.ceil(Number(formData.total_amt)/2) : formData.total_amt}</span>
                       </span>
                     )}
                   </button>

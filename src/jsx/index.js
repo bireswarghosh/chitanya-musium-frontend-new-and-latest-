@@ -133,7 +133,6 @@ const Markup = () => {
 
 
     /// Apps
-    { url: "app-profile", component: <AppProfile /> },
     { url: "email-compose", component: <Compose/> },
     { url: "email-inbox", component: <Inbox/> },
     { url: "email-read", component: <Read/> },

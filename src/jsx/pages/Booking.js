@@ -4,9 +4,8 @@ import swal from 'sweetalert';
 import { ThemeContext } from '../../context/ThemeContext';
 
 const API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/booking';
-const DEFAULT_SERVICE_CHARGE = 1000;
-const DEFAULT_BOOKING_CHARGE = 3000;
-const DEFAULT_EXTRA_HOUR_CHARGE = 1000;
+const DEFAULT_HALL_CHARGE = 6600;
+const DEFAULT_EXTRA_HOUR_CHARGE = 2200;
 const DEFAULT_BASE_HOURS = 3;
 
 const num = (v, fb = 0) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : fb; };
@@ -14,6 +13,7 @@ const num = (v, fb = 0) => { const n = Number(v); return Number.isFinite(n) && n
 const Booking = () => {
   const { background } = useContext(ThemeContext);
   const dk = background.value === 'dark';
+  const isLoggedIn = !!localStorage.getItem('isAuthenticated');
 
   const pageBg   = dk ? 'linear-gradient(180deg,#0f172a 0%,#1e293b 100%)' : 'linear-gradient(180deg,#F8FAFC 0%,#EFF6FF 100%)';
   const cardBg   = dk ? '#1e293b' : '#ffffff';
@@ -28,38 +28,55 @@ const Booking = () => {
   const inputBg  = dk ? '#0f172a' : '#ffffff';
   const inputBdr = dk ? '#475569' : '#CBD5E1';
 
-  const [formData, setFormData] = useState({ fullname: '', phone: '', email: '', address: '', booking_date: '', booking_time: '', extra_hours: '0', payment: '0', txn_id: '' });
+  // payment: '0'=Cash(admin only), '1'=Online Full, '2'=Online 50%
+  const defaultPayment = isLoggedIn ? '0' : '1';
+
+  const [formData, setFormData] = useState({
+    fullname: '', phone: '', email: '', address: '', aadhar: '',
+    booking_date: '', booking_time: '', extra_hours: '0',
+    payment: defaultPayment, txn_id: ''
+  });
   const [loading, setLoading] = useState(false);
-  const [serviceCharge, setServiceCharge] = useState(DEFAULT_SERVICE_CHARGE);
-  const [bookingCharge, setBookingCharge] = useState(DEFAULT_BOOKING_CHARGE);
+  const [hallCharge, setHallCharge] = useState(DEFAULT_HALL_CHARGE);
   const [extraHourCharge, setExtraHourCharge] = useState(DEFAULT_EXTRA_HOUR_CHARGE);
   const [baseHours, setBaseHours] = useState(DEFAULT_BASE_HOURS);
 
-  const svc = num(serviceCharge);
-  const book = num(bookingCharge);
-  const ehr = num(extraHourCharge);
-  const bh = Math.max(1, Math.floor(num(baseHours, DEFAULT_BASE_HOURS)) || DEFAULT_BASE_HOURS);
-  const extraHours = Math.max(0, Math.floor(num(formData.extra_hours)));
+  const hall = num(hallCharge);
+  const ehr  = num(extraHourCharge);
+  const bh   = Math.max(1, Math.floor(num(baseHours, DEFAULT_BASE_HOURS)) || DEFAULT_BASE_HOURS);
+  const extraHours  = Math.max(0, Math.floor(num(formData.extra_hours)));
   const extraCharge = extraHours * ehr;
-  const totalAmt = svc + book + extraCharge;
-  const totalHours = bh + extraHours;
+  const totalAmt    = hall + extraCharge;
+  const totalHours  = bh + extraHours;
+  const halfAmt     = Math.ceil(totalAmt / 2);
+  const payAmt      = formData.payment === '2' ? halfAmt : totalAmt;
 
   const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); };
-  const resetForm = () => setFormData({ fullname: '', phone: '', email: '', address: '', booking_date: '', booking_time: '', extra_hours: '0', payment: '0', txn_id: '' });
+  const resetForm = () => setFormData({ fullname: '', phone: '', email: '', address: '', aadhar: '', booking_date: '', booking_time: '', extra_hours: '0', payment: defaultPayment, txn_id: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault(); setLoading(true);
-    const payload = { ...formData, hours: totalHours, service_charge: svc, booking_charge: book, extra_charge: extraCharge, total_amt: totalAmt };
-    if (formData.payment === '1') {
+    const payload = {
+      ...formData,
+      hours: totalHours, hall_charge: hall,
+      extra_charge: extraCharge, total_amt: totalAmt,
+      paid_amt: payAmt, payment_type: formData.payment
+    };
+
+    // Online payment (full or 50%)
+    if (formData.payment === '1' || formData.payment === '2') {
       try {
-        const { data: order } = await axios.post('https://chitanya-musium-backend-new-and-latest.onrender.com/api/razorpay/create-order', { amount: totalAmt });
+        const { data: order } = await axios.post('https://chitanya-musium-backend-new-and-latest.onrender.com/api/razorpay/create-order', { amount: payAmt });
         const options = {
           key: 'rzp_live_RkF1Uzk5QpuC1K', amount: order.amount, currency: order.currency || 'INR',
-          name: 'Booking Payment', description: `${totalHours} Hours Booking`, order_id: order.id,
+          name: 'Hall Booking Payment',
+          description: formData.payment === '2' ? `50% Advance · ${totalHours}h Booking` : `Full Payment · ${totalHours}h Booking`,
+          order_id: order.id,
           prefill: { name: formData.fullname || '', contact: formData.phone || '' },
           handler: async function (response) {
-            await axios.post(API, { ...payload, payment: '1', txn_id: response.razorpay_payment_id });
-            swal("Success!", "Payment Done & Booking Confirmed!", "success"); resetForm();
+            await axios.post(API, { ...payload, txn_id: response.razorpay_payment_id });
+            swal("Success!", formData.payment === '2' ? `50% Advance ₹${payAmt} paid! Remaining ₹${totalAmt - payAmt} due at venue.` : "Full Payment Done & Booking Confirmed!", "success");
+            resetForm();
           },
           theme: { color: '#3399cc' }
         };
@@ -70,6 +87,8 @@ const Booking = () => {
       finally { setLoading(false); }
       return;
     }
+
+    // Cash (admin only)
     try { await axios.post(API, payload); swal("Success!", "Booking Created!", "success"); resetForm(); }
     catch { swal("Error!", "Failed to create booking", "error"); }
     finally { setLoading(false); }
@@ -82,6 +101,13 @@ const Booking = () => {
       style={{ borderRadius: '8px', fontSize: '13px', background: inputBg, color: text, border: `1px solid ${inputBdr}` }}
       onChange={(e) => { const v = e.target.value; setVal(v === '' ? '' : Math.max(0, Number(v))); }} />
   );
+
+  // Payment options: Cash only for logged-in, Online options always
+  const paymentOptions = [
+    ...(isLoggedIn ? [{ val: '0', emoji: '\ud83d\udcb5', label: 'Cash', sub: 'Instant confirm' }] : []),
+    { val: '1', emoji: '\u26a1', label: 'Online \u2013 Full', sub: `Pay \u20b9${totalAmt}` },
+    { val: '2', emoji: '\ud83d\udcb3', label: 'Online \u2013 50%', sub: `Pay \u20b9${halfAmt} now` },
+  ];
 
   return (
     <div style={{ minHeight: '100vh', background: pageBg, color: text, padding: '10px 12px', display: 'flex', flexDirection: 'column', fontFamily: "'Outfit','Inter',system-ui,sans-serif" }}>
@@ -110,8 +136,7 @@ const Booking = () => {
               {/* Rate Cards */}
               <div className="row g-2">
                 {[
-                  { emoji: '🧹', label: 'Service', hint: 'flat', val: serviceCharge, set: setServiceCharge },
-                  { emoji: '🏟️', label: `Hall (${bh}h)`, hint: 'base pack', val: bookingCharge, set: setBookingCharge },
+                  { emoji: '🏟️', label: `Hall (${bh}h)`, hint: 'base pack', val: hallCharge, set: setHallCharge },
                   { emoji: '⏱️', label: 'Extra /hr', hint: 'per hour', val: extraHourCharge, set: setExtraHourCharge },
                   { emoji: '🕙', label: 'Base hrs', hint: 'included', val: baseHours, set: setBaseHours, suffix: 'h' },
                 ].map(({ emoji, label, hint, val, set, suffix }) => (
@@ -133,8 +158,7 @@ const Booking = () => {
               {/* Breakdown */}
               <div style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: '12px', padding: '12px', fontSize: '12px' }}>
                 {[
-                  { icon: '🧹', label: 'Service', val: svc },
-                  { icon: '🏟️', label: `Hall (${bh}h)`, val: book },
+                  { icon: '🏟️', label: `Hall (${bh}h)`, val: hall },
                   { icon: '⏱️', label: `Extra (${extraHours}h)`, val: extraCharge },
                 ].map(({ icon, label, val }) => (
                   <div className="d-flex justify-content-between mb-1" key={label}>
@@ -146,16 +170,25 @@ const Booking = () => {
                   <span style={{ fontWeight: '700', color: text }}>Total · {totalHours}h</span>
                   <span style={{ fontWeight: '900', color: '#0284c7', fontSize: '14px' }}>₹{totalAmt}</span>
                 </div>
+                {formData.payment === '2' && (
+                  <div className="d-flex justify-content-between mt-1" style={{ background: dk ? '#1c2a1a' : '#f0fdf4', borderRadius: '8px', padding: '6px 8px' }}>
+                    <span style={{ color: '#16a34a', fontWeight: '700', fontSize: '11px' }}>💳 50% Advance Due Now</span>
+                    <span style={{ fontWeight: '900', color: '#16a34a', fontSize: '13px' }}>₹{halfAmt}</span>
+                  </div>
+                )}
               </div>
 
               {/* TOTAL BAR */}
               <div style={{ borderRadius: '14px', padding: '14px 16px', color: '#fff', background: 'linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-40%', right: '-10%', width: '200px', height: '200px', background: 'radial-gradient(circle,rgba(79,172,254,0.2) 0%,transparent 70%)', pointerEvents: 'none' }} />
                 <div className="d-flex align-items-center justify-content-between" style={{ position: 'relative' }}>
-                  <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'rgba(255,255,255,0.5)' }}>Total · {totalHours} hours</span>
+                  <div>
+                    <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'rgba(255,255,255,0.5)', display: 'block' }}>Total · {totalHours} hours</span>
+                    {formData.payment === '2' && <span style={{ fontSize: '10px', color: '#86efac' }}>Pay ₹{halfAmt} now · ₹{totalAmt - halfAmt} at venue</span>}
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
                     <span style={{ fontSize: '16px', fontWeight: '800', color: '#fbbf24' }}>₹</span>
-                    <span style={{ fontSize: '28px', fontWeight: '900', color: '#fff', letterSpacing: '-1px' }}>{totalAmt}</span>
+                    <span style={{ fontSize: '28px', fontWeight: '900', color: '#fff', letterSpacing: '-1px' }}>{formData.payment === '2' ? halfAmt : totalAmt}</span>
                   </div>
                 </div>
               </div>
@@ -185,6 +218,10 @@ const Booking = () => {
                     <input className="form-control form-control-sm" style={{ ...inp }} placeholder="name@example.com" name="email" value={formData.email} onChange={handleChange} />
                   </div>
                   <div className="col-md-6">
+                    <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Aadhar Number</label>
+                    <input className="form-control form-control-sm" style={{ ...inp }} placeholder="12-digit Aadhar" name="aadhar" value={formData.aadhar} onChange={handleChange} maxLength={12} />
+                  </div>
+                  <div className="col-12">
                     <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '2px', display: 'block' }}>Address</label>
                     <input className="form-control form-control-sm" style={{ ...inp }} placeholder="City / address" name="address" value={formData.address} onChange={handleChange} />
                   </div>
@@ -204,21 +241,23 @@ const Booking = () => {
                   {/* Payment Mode */}
                   <div className="col-12 mt-1">
                     <label style={{ fontSize: '11.5px', fontWeight: '700', color: muted, marginBottom: '6px', display: 'block' }}>💳 Payment Mode</label>
+                    {!isLoggedIn && (
+                      <div style={{ background: dk ? '#1c1a0a' : '#fffbeb', border: `1px solid ${dk ? '#854d0e' : '#f59e0b'}`, borderRadius: '8px', padding: '6px 10px', marginBottom: '8px', fontSize: '11px', color: dk ? '#fbbf24' : '#92400e' }}>
+                        ⚠️ Guest booking requires minimum 50% advance payment online.
+                      </div>
+                    )}
                     <div className="row g-2">
-                      {[
-                        { val: '0', emoji: '💵', label: 'Cash', sub: 'Instant confirm' },
-                        { val: '1', emoji: '⚡', label: 'Online', sub: 'Razorpay / UPI' },
-                      ].map(({ val, emoji, label, sub }) => (
-                        <div className="col-6" key={val}>
+                      {paymentOptions.map(({ val, emoji, label, sub }) => (
+                        <div className={paymentOptions.length === 3 ? 'col-4' : 'col-6'} key={val}>
                           <div onClick={() => setFormData(p => ({ ...p, payment: val }))} style={{
                             border: formData.payment === val ? '2px solid #0284c7' : `1px solid ${border}`,
                             background: formData.payment === val ? (dk ? '#1e3a5f' : '#EFF6FF') : panelBg,
-                            borderRadius: '10px', padding: '10px 12px', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s'
+                            borderRadius: '10px', padding: '10px 8px', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s'
                           }}>
-                            <span style={{ fontSize: '1.3rem' }}>{emoji}</span>
+                            <span style={{ fontSize: '1.2rem' }}>{emoji}</span>
                             <div>
-                              <div style={{ fontWeight: '700', fontSize: '12px', color: text }}>{label}</div>
+                              <div style={{ fontWeight: '700', fontSize: '11px', color: text }}>{label}</div>
                               <div style={{ fontSize: '10px', color: muted }}>{sub}</div>
                             </div>
                           </div>
@@ -237,7 +276,7 @@ const Booking = () => {
                   <button type="submit" className="btn w-100 text-white fw-bold" disabled={loading} style={{ background: 'linear-gradient(90deg,#0284c7 0%,#00c2fe 100%)', border: 'none', fontWeight: '800', fontSize: '14px', padding: '11px', borderRadius: '10px', boxShadow: '0 4px 14px rgba(2,132,199,0.35)' }}>
                     {loading ? 'Processing…' : (
                       <span>Confirm Booking &nbsp;
-                        <span style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '20px', padding: '2px 12px', fontSize: '13px', fontWeight: '900' }}>₹{totalAmt}</span>
+                        <span style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '20px', padding: '2px 12px', fontSize: '13px', fontWeight: '900' }}>₹{payAmt}</span>
                       </span>
                     )}
                   </button>

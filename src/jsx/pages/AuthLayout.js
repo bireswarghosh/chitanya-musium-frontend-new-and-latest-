@@ -41,7 +41,7 @@ function AuthLayout({
           <div className="ap-logo-mark">🏛️</div>
           <div className="ap-brand-name">
             <strong>Sri Chaitanya Mahaprabhu</strong>
-            <span>Museum · Mayapur</span>
+            <span>Museum · Bagbazar, Kolkata</span>
           </div>
         </div>
 

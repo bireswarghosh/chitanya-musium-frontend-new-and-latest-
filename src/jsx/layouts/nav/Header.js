@@ -133,7 +133,7 @@ const Header = () => {
                     <div style={{ fontSize: "0.72rem", color: "#64748b" }}>{roleLabel}</div>
                   </div>
 
-                  {/* Logout */
+                  {/* Logout */}
                   <button className="dropdown-item" onClick={onLogout}
                     style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", color: "#dc2626", background: "none", border: "none", width: "100%", textAlign: "left", fontSize: "0.85rem", fontWeight: 600 }}>
                     <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
