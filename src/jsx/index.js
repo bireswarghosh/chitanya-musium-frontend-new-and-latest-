@@ -107,6 +107,7 @@ import Booking from "./pages/Booking";
 import BookingList from "./pages/BookingList";
 import AccessControl from "./pages/AccessControl";
 import ActivityDashboard from "./pages/ActivityDashboard";
+import RateSettings from "./pages/RateSettings";
 import { ThemeContext } from "../context/ThemeContext";
 
 //Scroll To Top
@@ -209,6 +210,7 @@ const Markup = () => {
     { url: "booking-list", component: <BookingList/> },
     { url: "access-control", component: <AccessControl/> },
     { url: "activity-dashboard", component: <ActivityDashboard/> },
+    { url: "rate-settings", component: <RateSettings/> },
     
   ];
 

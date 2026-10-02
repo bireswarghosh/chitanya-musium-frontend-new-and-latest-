@@ -1,11 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import swal from 'sweetalert';
 import { ThemeContext } from '../../context/ThemeContext';
+import { rateSettingsService } from '../../services/RateSettingsService';
 
 const API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/booking';
-const DEFAULT_HALL_CHARGE = 6600;
-const DEFAULT_EXTRA_HOUR_CHARGE = 2200;
 const DEFAULT_BASE_HOURS = 3;
 
 const num = (v, fb = 0) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : fb; };
@@ -37,9 +36,33 @@ const Booking = () => {
     payment: defaultPayment, txn_id: ''
   });
   const [loading, setLoading] = useState(false);
-  const [hallCharge, setHallCharge] = useState(DEFAULT_HALL_CHARGE);
-  const [extraHourCharge, setExtraHourCharge] = useState(DEFAULT_EXTRA_HOUR_CHARGE);
-  const [baseHours, setBaseHours] = useState(DEFAULT_BASE_HOURS);
+  const cachedRates = rateSettingsService.getCachedRates();
+  const [hallCharge, setHallCharge] = useState(cachedRates.hall_charge);
+  const [extraHourCharge, setExtraHourCharge] = useState(cachedRates.extra_hour_charge);
+  const [baseHours, setBaseHours] = useState(cachedRates.base_hours);
+
+  useEffect(() => {
+    const loadRates = async () => {
+      const latest = await rateSettingsService.fetchRates();
+      if (!isLoggedIn) {
+        setHallCharge(latest.hall_charge);
+        setExtraHourCharge(latest.extra_hour_charge);
+        setBaseHours(latest.base_hours);
+      }
+    };
+    loadRates();
+
+    const handleUpdated = () => {
+      const cached = rateSettingsService.getCachedRates();
+      if (!isLoggedIn) {
+        setHallCharge(cached.hall_charge);
+        setExtraHourCharge(cached.extra_hour_charge);
+        setBaseHours(cached.base_hours);
+      }
+    };
+    window.addEventListener('scmm_rates_updated', handleUpdated);
+    return () => window.removeEventListener('scmm_rates_updated', handleUpdated);
+  }, [isLoggedIn]);
 
   const hall = num(hallCharge);
   const ehr  = num(extraHourCharge);
@@ -97,9 +120,27 @@ const Booking = () => {
   const inp = { border: `1px solid ${inputBdr}`, borderRadius: '8px', padding: '6px 10px', fontSize: '12.5px', background: inputBg, color: text };
 
   const rateInput = (val, setVal) => (
-    <input type="number" value={val} min="0" className="form-control form-control-sm text-center fw-bold"
-      style={{ borderRadius: '8px', fontSize: '13px', background: inputBg, color: text, border: `1px solid ${inputBdr}` }}
-      onChange={(e) => { const v = e.target.value; setVal(v === '' ? '' : Math.max(0, Number(v))); }} />
+    <input 
+      type="number" 
+      value={val} 
+      min="0" 
+      className="form-control form-control-sm text-center fw-bold"
+      style={{ 
+        borderRadius: '8px', 
+        fontSize: '13px', 
+        background: isLoggedIn ? inputBg : (dk ? '#1e293b' : '#f8fafc'), 
+        color: text, 
+        border: `1px solid ${inputBdr}`,
+        cursor: isLoggedIn ? 'text' : 'not-allowed'
+      }}
+      readOnly={!isLoggedIn}
+      disabled={!isLoggedIn}
+      onChange={(e) => { 
+        if (!isLoggedIn) return;
+        const v = e.target.value; 
+        setVal(v === '' ? '' : Math.max(0, Number(v))); 
+      }} 
+    />
   );
 
   // Payment options: Cash only for logged-in, Online options always
@@ -119,7 +160,9 @@ const Booking = () => {
             🏛️ SRI CHAITANYA MAHAPRABHU MUSEUM · HALL BOOKING
           </div>
           <h2 style={{ fontWeight: '900', fontSize: '20px', color: heading, margin: '2px 0 1px 0' }}>🏟️ Hall Booking Form</h2>
-          <p style={{ color: muted, fontSize: '12px', margin: 0 }}>Adjust rates if needed — default tariff applies automatically</p>
+          <p style={{ color: muted, fontSize: '12px', margin: 0 }}>
+            {isLoggedIn ? 'Adjust rates if needed — default tariff applies automatically' : 'Official venue reservation form — standard verified tariffs'}
+          </p>
         </div>
 
         {/* MAIN 2-COLUMN CARD */}
@@ -130,7 +173,21 @@ const Booking = () => {
             <div style={{ background: panelBg, border: `1px solid ${border}`, borderRadius: '14px', padding: '16px', height: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div className="d-flex align-items-center justify-content-between">
                 <h6 style={{ margin: 0, fontWeight: '800', color: text, fontSize: '14px' }}>💰 Hall Tariff</h6>
-                <span style={{ background: chipBg, color: chipClr, border: `1px solid ${chipBdr}`, borderRadius: '20px', fontSize: '10px', fontWeight: '700', padding: '2px 10px' }}>✏️ Editable</span>
+                <div className="d-flex align-items-center gap-2">
+                  <span style={{ 
+                    background: isLoggedIn ? chipBg : (dk ? '#1e293b' : '#F1F5F9'), 
+                    color: isLoggedIn ? chipClr : muted, 
+                    border: `1px solid ${isLoggedIn ? chipBdr : border}`, 
+                    borderRadius: '20px', fontSize: '10px', fontWeight: '700', padding: '2px 10px' 
+                  }}>
+                    {isLoggedIn ? '✏️ Editable (Admin)' : '🔒 Standard Tariff'}
+                  </span>
+                  {isLoggedIn && (
+                    <a href="/rate-settings" title="Configure Default Rates in Settings" style={{ fontSize: '12px', color: '#0284c7', textDecoration: 'none', fontWeight: '700' }}>
+                      ⚙️ Settings
+                    </a>
+                  )}
+                </div>
               </div>
 
               {/* Rate Cards */}
