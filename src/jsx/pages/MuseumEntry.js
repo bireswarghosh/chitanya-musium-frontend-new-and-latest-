@@ -107,7 +107,7 @@ const MuseumEntry = () => {
 
     if (formData.payment === '1' || formData.payment === '2') {
       try {
-        const { data: order } = await axios.post('https://chitanya-musium-backend-new-and-latest.onrender.com/api/razorpay/create-order', { amount: payAmt });
+        const { data: order } = await axios.post('https://chitanya-musium-backend-new-and-lat.vercel.app/api/razorpay/create-order', { amount: payAmt });
         const options = {
           key: 'rzp_live_RkF1Uzk5QpuC1K', amount: order.amount, currency: order.currency || 'INR',
           name: 'Sri Chaitanya Mahaprabhu Museum',
@@ -116,7 +116,7 @@ const MuseumEntry = () => {
           prefill: { name: formData.firstname || '', contact: formData.phone || '' },
           handler: async function (response) {
             const updatedData = { ...formData, payment: formData.payment, txn_id: response.razorpay_payment_id };
-            const res = await axios.post('https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum', updatedData);
+            const res = await axios.post('https://chitanya-musium-backend-new-and-lat.vercel.app/api/museum', updatedData);
             swal("Success!", formData.payment === '2' ? `50% Advance ₹${payAmt} paid! Remaining ₹${total - payAmt} due at counter.` : "Payment Successful & Entry Created!", "success").then(() => handlePrint(res.data));
             setFormData({ firstname: '', phone: '', address: '', num_of_persons: '1', total_amt: (Number(galleryPrice) || 50).toString(), payment: defaultPayment, gallery: '1', movie_show: '0', discount: '0', txn_id: '' });
           },
@@ -131,7 +131,7 @@ const MuseumEntry = () => {
     }
     // Cash (admin only)
     try {
-      const res = await axios.post('https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum', formData);
+      const res = await axios.post('https://chitanya-musium-backend-new-and-lat.vercel.app/api/museum', formData);
       swal("Success!", "Entry Created!", "success").then(() => handlePrint(res.data));
       setFormData({ firstname: '', phone: '', address: '', num_of_persons: '1', total_amt: (Number(galleryPrice) || 50).toString(), payment: defaultPayment, gallery: '1', movie_show: '0', discount: '0', txn_id: '' });
     } catch { swal("Error!", "Failed", "error"); }

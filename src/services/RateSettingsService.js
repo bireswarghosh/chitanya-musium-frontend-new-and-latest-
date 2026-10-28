@@ -5,7 +5,7 @@ const isLocal = typeof window !== 'undefined' &&
 
 const API_BASE_URL = isLocal 
   ? 'http://localhost:3003/api'
-  : 'https://chitanya-musium-backend-new-and-latest.onrender.com/api';
+  : 'https://chitanya-musium-backend-new-and-lat.vercel.app/api';
 
 const STORAGE_KEY = 'scmm_default_rates';
 

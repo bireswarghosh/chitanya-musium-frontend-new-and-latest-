@@ -36,7 +36,7 @@ function SuperAdminLogin() {
     setBusy(true);
     try {
       const res = await axios.post(
-        'https://chitanya-musium-backend-new-and-latest.onrender.com/api/auth/login',
+        'https://chitanya-musium-backend-new-and-lat.vercel.app/api/auth/login',
         { username, password }
       );
 

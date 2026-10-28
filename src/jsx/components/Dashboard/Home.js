@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../../../css/dashboard-premium.css';
 
-const MUSEUM_API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum';
-const BOOKING_API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/booking';
-const CAMPING_API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/camping';
+const MUSEUM_API = 'https://chitanya-musium-backend-new-and-lat.vercel.app/api/museum';
+const BOOKING_API = 'https://chitanya-musium-backend-new-and-lat.vercel.app/api/booking';
+const CAMPING_API = 'https://chitanya-musium-backend-new-and-lat.vercel.app/api/camping';
 
 const dayKey = (d) => {
   const dt = d instanceof Date ? d : new Date(d);

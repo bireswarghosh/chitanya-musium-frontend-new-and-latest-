@@ -6,7 +6,7 @@ import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
-const API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/camping';
+const API = 'https://chitanya-musium-backend-new-and-lat.vercel.app/api/camping';
 
 const INTEREST_OPTIONS = ['High', 'Medium', 'Low'];
 const SOURCE_OPTIONS = ['Walk-in', 'Referral', 'Online', 'Phone', 'Social Media', 'Camp Visit', 'Other'];

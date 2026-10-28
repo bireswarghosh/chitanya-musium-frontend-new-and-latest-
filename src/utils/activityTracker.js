@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/activity';
+const API = 'https://chitanya-musium-backend-new-and-lat.vercel.app/api/activity';
 
 let sessionId = localStorage.getItem('sessionId');
 if (!sessionId) {

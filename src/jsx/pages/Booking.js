@@ -4,7 +4,7 @@ import swal from 'sweetalert';
 import { ThemeContext } from '../../context/ThemeContext';
 import { rateSettingsService } from '../../services/RateSettingsService';
 
-const API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/booking';
+const API = 'https://chitanya-musium-backend-new-and-lat.vercel.app/api/booking';
 const DEFAULT_BASE_HOURS = 3;
 
 const num = (v, fb = 0) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : fb; };
@@ -89,7 +89,7 @@ const Booking = () => {
     // Online payment (full or 50%)
     if (formData.payment === '1' || formData.payment === '2') {
       try {
-        const { data: order } = await axios.post('https://chitanya-musium-backend-new-and-latest.onrender.com/api/razorpay/create-order', { amount: payAmt });
+        const { data: order } = await axios.post('https://chitanya-musium-backend-new-and-lat.vercel.app/api/razorpay/create-order', { amount: payAmt });
         const options = {
           key: 'rzp_live_RkF1Uzk5QpuC1K', amount: order.amount, currency: order.currency || 'INR',
           name: 'Hall Booking Payment',

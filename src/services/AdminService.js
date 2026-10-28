@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// const API_BASE_URL = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api';
+// const API_BASE_URL = 'https://chitanya-musium-backend-new-and-lat.vercel.app/api';
 // const API_BASE_URL = 'http://localhost:3003/api';
-const API_BASE_URL = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api';
+const API_BASE_URL = 'https://chitanya-musium-backend-new-and-lat.vercel.app/api';
 
 // Token interceptor disabled for development
 // axios.interceptors.request.use((config) => {

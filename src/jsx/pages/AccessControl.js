@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import swal from 'sweetalert';
 
-const API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api';
+const API = 'https://chitanya-musium-backend-new-and-lat.vercel.app/api';
 
 const PAGES = [
   { key: 'museum-entry', label: 'Museum Entry Form', icon: '🎟️', group: 'Museum' },

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api';
+const API = 'https://chitanya-musium-backend-new-and-lat.vercel.app/api';
 
 // Load permissions for current user's role
 export const loadUserPermissions = async () => {

@@ -64,8 +64,8 @@ const MuseumEntries = () => {
   const fetchEntries = async () => { // eslint-disable-line no-unused-vars
     try {
       setLoading(true);
-   // const response = await axios.get('https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum');
-      const response = await axios.get('https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum');
+   // const response = await axios.get('https://chitanya-musium-backend-new-and-lat.vercel.app/api/museum');
+      const response = await axios.get('https://chitanya-musium-backend-new-and-lat.vercel.app/api/museum');
       
       setEntries(response.data);
     } catch (error) {
@@ -110,7 +110,7 @@ const MuseumEntries = () => {
         image_name: formData.image_name || '',
         txn_id: formData.txn_id || ''
       };
-      await axios.put(`https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum/${editingEntry.id}`, payload);
+      await axios.put(`https://chitanya-musium-backend-new-and-lat.vercel.app/api/museum/${editingEntry.id}`, payload);
       swal('Success', 'Entry updated successfully', 'success');
       setShowModal(false);
       handleSearch();
@@ -133,8 +133,8 @@ const MuseumEntries = () => {
     if (willDelete) {
       try {
         setLoading(true);
-        // await axios.delete(`https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum/${entryId}`);
-          await axios.delete(`https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum/${entryId}`);
+        // await axios.delete(`https://chitanya-musium-backend-new-and-lat.vercel.app/api/museum/${entryId}`);
+          await axios.delete(`https://chitanya-musium-backend-new-and-lat.vercel.app/api/museum/${entryId}`);
         swal('Success', 'Entry deleted successfully', 'success');
          handleSearch()
       } catch (error) {
@@ -151,9 +151,9 @@ const handleSearch = async () => {
     setLoading(true);
 
     const res = await axios.post(
-      // 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum/search',
+      // 'https://chitanya-musium-backend-new-and-lat.vercel.app/api/museum/search',
       // 'http://localhost:3003/api/museum/search',
-      'https://chitanya-musium-backend-new-and-latest.onrender.com/api/museum/search',
+      'https://chitanya-musium-backend-new-and-lat.vercel.app/api/museum/search',
       searchData
     );
 

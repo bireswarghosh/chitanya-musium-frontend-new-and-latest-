@@ -5,7 +5,7 @@ import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import { ThemeContext } from '../../context/ThemeContext';
 
-const API = 'https://chitanya-musium-backend-new-and-latest.onrender.com/api/camping';
+const API = 'https://chitanya-musium-backend-new-and-lat.vercel.app/api/camping';
 
 const INTEREST_OPTIONS = [
   { value: 'High', label: '🔥 High Interest' },
